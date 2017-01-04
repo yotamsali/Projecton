@@ -3,11 +3,13 @@ import numpy as np
 from scipy.misc import imresize
 from skimage import io, feature , color, exposure
 
+FACTOR = 0.2
+THRESHOLD = 0.43
+TEMP1 = 0.09
+TEMP2 = 0.06
 
-FACTOR = 0.6
 
-def templateMatcher (im):
-    FACTORTEMPLATE = 0.05
+def templateMatcher (im, factorTemplate):
     """
     tlIm = io.imread('tl.png')
     tlIm = tlIm[220:255,488:500,:]
@@ -25,19 +27,16 @@ def templateMatcher (im):
     sizeOrig = tlIm.shape
     height = sizeOrig[0]
     width = sizeOrig[1]
-    newWidth = (int) (width * FACTORTEMPLATE)
-    newHeight = (int) (height * FACTORTEMPLATE)
+    newWidth = (int) (width * factorTemplate)
+    newHeight = (int) (height * factorTemplate)
     list = [newHeight, newWidth]
     arraySize = np.array(list)
     tlIm = imresize(tlIm, arraySize)
-
+    """""
     f, arrPrint = matplotlib.pyplot.subplots(1, 2)
     arrPrint[0].imshow(tlIm, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
-
-
-
-
+    """""
     map = feature.match_template(im, tlIm, pad_input=True)
     return map
 
@@ -55,30 +54,13 @@ def toc():
         print ("Toc: start time not set")
 
 #********** SCRIPT *********************************************************
-"""""""""
-imR = camera[:,:,0]
-imG = camera[:,:,1]
-imB = camera[:,:,2]
-
-greenThresholG = 90
-ThreshoDiff = 15
-sum = imR +imB+ imG
-
-
-#binaryColorGreen = np.floor((1/3)*(imG > 0.43*sum)
-#                            + (1/3)*(imG > greenThresholG)
-#                            + (1/3)* (sum > 120))
 
 
 
-#binaryColorGreen = morphology.binary_opening(binaryColorGreen)
-#removeSmall = morphology.remove_small_objects(binaryColorGreen)
-#binaryColorGreen = binaryColorGreen - removeSmall
-"""""""""""
 
+camera = io.imread('tlData2.png')
 tic()
-camera = io.imread('tlHard.jpg')
-#camera = color.rgb2gray(camera)
+camera = color.rgb2gray(camera)
 lstOrig = camera.shape
 width = lstOrig[1]
 height = lstOrig[0]
@@ -87,20 +69,21 @@ newHeight = (int)(height * FACTOR)
 print(newHeight)
 list = [newHeight, newWidth]
 arraySize = np.array(list)
-toc()
-tic()
 print(arraySize)
 print([height, width])
 tlIm = imresize(camera, arraySize)
 tlIm = exposure.equalize_adapthist(tlIm)
 toc()
 tic()
-map = templateMatcher(tlIm)
-bin = map > 0.55
+map1 = templateMatcher(tlIm, TEMP1);
+map2 =  templateMatcher(tlIm,TEMP2);
+bin1 = map1 > THRESHOLD
+bin2 = map2 > THRESHOLD
 toc()
 
-f, arr = matplotlib.pyplot.subplots(1, 2)
-arr[0].imshow(tlIm, cmap='color', interpolation='nearest')
-arr[1].imshow(bin, cmap='gray', interpolation='nearest')
+f, arr = matplotlib.pyplot.subplots(1, 3)
+arr[0].imshow(tlIm, cmap='gray', interpolation='nearest')
+arr[1].imshow(bin1, cmap='gray', interpolation='nearest')
+arr[2].imshow(bin2, cmap='gray', interpolation='nearest')
 
 matplotlib.pyplot.show()
