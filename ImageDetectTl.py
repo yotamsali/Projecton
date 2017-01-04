@@ -3,10 +3,11 @@ import numpy as np
 from scipy.misc import imresize
 from skimage import io, feature , color, exposure
 
+
 FACTOR = 0.6
 
 def templateMatcher (im):
-    FACTORTEMPLATE = 0.06
+    FACTORTEMPLATE = 0.05
     """
     tlIm = io.imread('tl.png')
     tlIm = tlIm[220:255,488:500,:]
@@ -76,8 +77,8 @@ sum = imR +imB+ imG
 """""""""""
 
 tic()
-camera = io.imread('tl.png')
-camera = color.rgb2gray(camera)
+camera = io.imread('tlHard.jpg')
+#camera = color.rgb2gray(camera)
 lstOrig = camera.shape
 width = lstOrig[1]
 height = lstOrig[0]
@@ -99,7 +100,7 @@ bin = map > 0.55
 toc()
 
 f, arr = matplotlib.pyplot.subplots(1, 2)
-arr[0].imshow(tlIm, cmap='gray', interpolation='nearest')
+arr[0].imshow(tlIm, cmap='color', interpolation='nearest')
 arr[1].imshow(bin, cmap='gray', interpolation='nearest')
 
 matplotlib.pyplot.show()
