@@ -1,0 +1,4 @@
+Things to implement
+1. Streamer from avi video to images
+2. Function for indexes in binary image components
+3.
