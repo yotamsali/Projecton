@@ -1,8 +1,10 @@
 from carControl import*
-
+from streamer import*
+path = 'try.avi'
+strm = Streamer(path)
 while True:
-    getImage(ind)
-    Light = recognizeTl()   ##contains 1- exestance. 2 - place 3 - template.
+    im = strm.getImage()
+    Light = recognize()
     if Light[0] == True:
         Direction = getDirection()
         if Direction == True:
