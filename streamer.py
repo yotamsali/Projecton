@@ -2,7 +2,7 @@ import time
 
 import imageio
 
-
+# gil was here
 class Streamer:
     def __init__(self, filepath, fps):
         self.timestamp = time.time()
