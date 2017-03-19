@@ -39,7 +39,7 @@ def ShowVideo(path, fps):
             right = int(input())
             print("the last index of picture")
             maxindex = int(input())
-            TrackLight(im,up,down,left,right,maxindex)
+            TrackLight(im,up,down,left,right,maxindex,s)
         if sit == TRACK_GARBAGE:
             print("up, down, left, right in that order")
             up = int(input())
@@ -48,34 +48,56 @@ def ShowVideo(path, fps):
             right = int(input())
             print("the last index of picture")
             maxindex = int(input())
-            TrackLight(im, up, down, left, right, maxindex)
-        im = s.getNext()
+            TrackLight(im, up, down, left, right, maxindex,s)
+        else:
+           for i in range(sit):
+                im = s.getNext()
         try:
             check = (im == 0)
         except:
             check = True
 
 
-def TrackLight(im,up,down,left,right,max_index):
-    counter = 2
+def TrackLight(im,up,down,left,right,max_index,s):
+    counter, start = 2
     New_Template, Template_XY = im[up:down,left:right], (up,left)
     # save given traffic light
-    cv2.imwrite(New_Template,TL_DIR_PATH + str(1 + max_index))  # todo update path!!!!!!!!!!
+    cv2.imwrite(TL_DIR_PATH + str(1 + max_index)+".jpg",New_Template)  # todo update path!!!!!!!!!!
     # Track loop
     while New_Template.shape[0] <= MAX_SIZE:
-        New_Template, Template_XY= Tracking.Track(im,New_Template,Template_XY)
-        cv2.imwrite(New_Template,TL_DIR_PATH+str(counter+max_index)) #todo update path!!!!!!!!!!
+        im = s.getNext()
+        if counter > start + 50:
+            print("up, down, left, right in that order")
+            up = int(input())
+            down = int(input())
+            left = int(input())
+            right = int(input())
+            New_Template, Template_XY = im[up:down, left:right], (up, left)
+            cv2.imwrite(TL_DIR_PATH + str(counter + max_index) + ".jpg", New_Template)
+        else:
+            New_Template, Template_XY = Tracking.Track(im,New_Template,Template_XY)
+            cv2.imwrite(TL_DIR_PATH + str(counter+max_index) + ".jpg",New_Template) #todo update path!!!!!!!!!!
         counter+=1
 
-def TrackGarbage(im,up,down,left,right,max_index):
-    counter = 2
+
+def TrackGarbage(im,up,down,left,right,max_index,s):
+    counter, start = 2
     New_Template, Template_XY = im[up:down,left:right], (up,left)
     # save given Garbage
-    cv2.imwrite(New_Template,GARBAGE_PATH + str(1 + max_index))  # todo update path!!!!!!!!!!
+    cv2.imwrite(GARBAGE_PATH + str(1 + max_index)+".jpg",New_Template)  # todo update path!!!!!!!!!!
     # Track loop
     while New_Template.shape[0] <= MAX_SIZE:
-        New_Template, Template_XY= Tracking.Track(im,New_Template,Template_XY)
-        cv2.imwrite(New_Template,GARBAGE_PATH+str(counter+max_index)) #todo update path!!!!!!!!!!
+        if counter > start + 50:
+            print("up, down, left, right in that order")
+            up = int(input())
+            down = int(input())
+            left = int(input())
+            right = int(input())
+            New_Template, Template_XY = im[up:down, left:right], (up, left)
+            cv2.imwrite(GARBAGE_PATH + str(counter + max_index) + ".jpg", New_Template)
+        else:
+            New_Template, Template_XY = Tracking.Track(im,New_Template,Template_XY)
+            cv2.imwrite(GARBAGE_PATH + str(counter+max_index) + ".jpg",New_Template) #todo update path!!!!!!!!!!
         counter+=1
 
 fps = 40
