@@ -10,8 +10,6 @@ class Streamer:
         self.fps = fps
         self.prev = 1
 
-
-
     def getImage(self):
         timeDiff = time.time() - self.timestamp
         try:
