@@ -59,7 +59,8 @@ def ShowVideo(path, fps):
 
 
 def TrackLight(im,up,down,left,right,max_index,s):
-    counter, start = 2
+    counter = 2
+    start = 2
     New_Template, Template_XY = im[up:down,left:right], (up,left)
     # save given traffic light
     cv2.imwrite(TL_DIR_PATH + str(1 + max_index)+".jpg",New_Template)  # todo update path!!!!!!!!!!
@@ -67,6 +68,9 @@ def TrackLight(im,up,down,left,right,max_index,s):
     while New_Template.shape[0] <= MAX_SIZE:
         im = s.getNext()
         if counter > start + 50:
+            f, arr = matplotlib.pyplot.subplots(1, 1)
+            arr.imshow(im, cmap='gray')  # , interpolation='nearest')
+            matplotlib.pyplot.show()
             print("up, down, left, right in that order")
             up = int(input())
             down = int(input())
@@ -74,6 +78,7 @@ def TrackLight(im,up,down,left,right,max_index,s):
             right = int(input())
             New_Template, Template_XY = im[up:down, left:right], (up, left)
             cv2.imwrite(TL_DIR_PATH + str(counter + max_index) + ".jpg", New_Template)
+            start = counter
         else:
             New_Template, Template_XY = Tracking.Track(im,New_Template,Template_XY)
             cv2.imwrite(TL_DIR_PATH + str(counter+max_index) + ".jpg",New_Template) #todo update path!!!!!!!!!!
@@ -81,13 +86,18 @@ def TrackLight(im,up,down,left,right,max_index,s):
 
 
 def TrackGarbage(im,up,down,left,right,max_index,s):
-    counter, start = 2
+    counter = 2
+    start = 2
     New_Template, Template_XY = im[up:down,left:right], (up,left)
     # save given Garbage
-    cv2.imwrite(GARBAGE_PATH + str(1 + max_index)+".jpg",New_Template)  # todo update path!!!!!!!!!!
+    cv2.imwrite(GARBAGE_PATH + str(1 + max_index)+".jpg",New_Template)
     # Track loop
     while New_Template.shape[0] <= MAX_SIZE:
+        im = s.getNext()
         if counter > start + 50:
+            f, arr = matplotlib.pyplot.subplots(1, 1)
+            arr.imshow(im, cmap='gray')#, interpolation='nearest')
+            matplotlib.pyplot.show()
             print("up, down, left, right in that order")
             up = int(input())
             down = int(input())
@@ -95,9 +105,10 @@ def TrackGarbage(im,up,down,left,right,max_index,s):
             right = int(input())
             New_Template, Template_XY = im[up:down, left:right], (up, left)
             cv2.imwrite(GARBAGE_PATH + str(counter + max_index) + ".jpg", New_Template)
+            start = counter
         else:
             New_Template, Template_XY = Tracking.Track(im,New_Template,Template_XY)
-            cv2.imwrite(GARBAGE_PATH + str(counter+max_index) + ".jpg",New_Template) #todo update path!!!!!!!!!!
+            cv2.imwrite(GARBAGE_PATH + str(counter+max_index) + ".jpg",New_Template)
         counter+=1
 
 fps = 40
