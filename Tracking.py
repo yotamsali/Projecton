@@ -68,9 +68,9 @@ def Track(im, template, xy):
     #cv2.imwrite("/home/yovelrom/Downloads/gif/" + number_string + ".jpg", camera)
     #k = cv2.waitKey(0) & 0xff
 
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(imNew, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
+    #f, arr = matplotlib.pyplot.subplots(1, 1)
+    #arr.imshow(imNew, cmap='gray', interpolation='nearest')
+    #matplotlib.pyplot.show()
     for t in possible_templates_list:
         filters.append(feature.match_template(imNew, t, pad_input=False))
         i+=1
