@@ -2,7 +2,8 @@ import math
 
 #returns distance by size of traffic light dimentions
 #returns also variance (of calc by col and row) 
-
+def getDistance():
+	return 5
 def tlDistCalc(rowSize, colSize):
 
 	# we have prior knowledge on example

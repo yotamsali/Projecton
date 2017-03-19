@@ -1,0 +1,2 @@
+def getDirection():
+    return 'F'

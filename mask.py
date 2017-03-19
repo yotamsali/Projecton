@@ -1,6 +1,10 @@
 import cv2
+import matplotlib.pyplot
 import numpy as np
+from skimage import measure
 from skimage import morphology
+
+
 def tic():
     #Homemade version of matlab tic and toc functions
     import time
@@ -49,7 +53,6 @@ def maskFilter(image):
     lower_green = np.array([15,150,100])
     upper_green = np.array([35,255,255])
 
-
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
     mask2 = cv2.inRange(hsv, lower_green, upper_green)
     mask = cv2.bitwise_or(mask1, mask2)
@@ -58,14 +61,16 @@ def maskFilter(image):
     res2 = cv2.bitwise_and(res, res, mask=mask)
     labels = morphology.label(res2, background=0)
 
-    '''
     matplotlib.pyplot.imshow(mask1)
     matplotlib.pyplot.show()
     matplotlib.pyplot.imshow(res)
     matplotlib.pyplot.show()
     matplotlib.pyplot.imshow(res2)
     matplotlib.pyplot.show()
-    '''
+
+    x = measure.regionprops(res)
+    x =x
+
 
 im = cv2.imread('tlData1.png')
 maskFilter(im)

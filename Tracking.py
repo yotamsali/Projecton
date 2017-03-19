@@ -1,10 +1,9 @@
 import math
 
-import cv2
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-from skimage import io, feature
+from skimage import feature
 
 TEMPS_SIZES = [1,1.1,1.2] #The image is half from its original size
 MATCH_RATE = 0
@@ -112,7 +111,7 @@ def string(i):
     new += str(i)
     return new
 
-
+"""""
 camera = io.imread('/home/yovelrom/Downloads/dayTrain/dayClip3/frames/dayClip3--00000.png')
 #camera = color.rgb2hsv(camera)
 
@@ -144,3 +143,4 @@ matplotlib.pyplot.plot(runtime)
 matplotlib.pyplot.ylabel('running-time (sec)')
 matplotlib.pyplot.xlabel('frame')
 matplotlib.pyplot.show()
+"""""
