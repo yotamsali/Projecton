@@ -53,7 +53,6 @@ def max_spot(arr):
 
 # gets image and a traffic light template (from a moment ago)
 # returns new relevant template and the location of the traffic light right now
-#TODO take into account placement of TL in image (move right if TL is in right side of image, etc)
 def Track(im, template, xy):
     size = template.shape
     up= xy[0] - int(size[0]*size[0]/40)
