@@ -49,11 +49,11 @@ def brightness(im):
 
 
 
-# TODO ask sali what "cam" is, currently assumes that cam is opened image
+# TODO make sure that img is cropped image of traffic light
 #returns the current state of the traffic light
 #returns -1 in case of error
 
-def getColor(cam):
+def getColor(img):
     TOP = 0
     MIDDLE = 1
     BOTTOM = 2
