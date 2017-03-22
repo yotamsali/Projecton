@@ -1,17 +1,35 @@
-from ImageDetectTl import tlDetect
-from calcDistanceLib import getDistance
-from carControl import carControl
-from colorGetter import getColor
-from direction import getDirection
-from streamer import Streamer
-from Tracking import Track
+from ImageDetectTl import*
+from calcDistanceLib import*
+from carControl import*
+from colorGetter import*
+from direction import*
+from streamer import*
+from Tracking import*
+from pynput.keyboard import Key, Listener
+import visvis as vv
 
-path = 'try.avi'
-strm = Streamer(path)
+fps = 24
+path = 'tl.avi'
+strm = Streamer(path, fps)
+leftIm = imageio.imread('left.jpg')
+forwardIm = imageio.imread('forward.jpg')
+arrow = forwardIm
+
 global carCntrl
 
-
-
+def on_press(key):
+    global arrow
+    if key == Key.up :
+        print("UP")
+        arrow = forwardIm
+    if key == Key.down :
+        print("DOWN")
+    if key == Key.left :
+        print("LEFT")
+        arrow = leftIm
+    if key == Key.right :
+        print("RIGHT")
+        arrow = leftIm[:,::-1]
 
 #checks if the tracker lost the traffic light
 #parameters:
@@ -45,7 +63,7 @@ def trackMain (tl_im, indX, indY, fullim):
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #TODO Here to implement green blinking (ירוק מהבהב)
         color = getColor(tl_im)
-        dist = getDistance(tl_im, indX, indY, fullim)
+        dist = tlDistCalc(tl_im.shape[0], tl_im.shape[1])
         DecisionMaker(color, dist)
 
         oldXY = newXY
@@ -57,14 +75,21 @@ def trackMain (tl_im, indX, indY, fullim):
 def DecisionMaker(color, distance):
     if color == 'Green':
         carCntrl.Drive(50)
-    #TODO Here to implement green blinking (ירוק מהבהב)
+    # Here to implement green blinking (ירוק מהבהב)
     else:
         carCntrl.Break(distance)
 
 def main():
+    listener = Listener(
+        on_press=on_press,
+    )
+    listener.start()
     carCntrl = carControl()
     while True:
         im = strm.getImage()
+        im[:100, :100] = arrow
+        vv.imshow(im)
+        vv.processEvents()
         listTl = tlDetect(im)
         listOfOurTl = []
         direc = carCntrl.direction()
@@ -72,7 +97,7 @@ def main():
             if (getDirection(cam[0]) == direc):
                 listOfOurTl += [cam]
         if len(listOfOurTl) > 1:
-            # check TODO document what this function does
+            # check
             tlChosen = [max(listOfOurTl, key=lambda p: p[0].shape[0] * p.shape[1])]
         elif len(listOfOurTl) == 1:
             tlChosen = listOfOurTl[0]
@@ -82,3 +107,7 @@ def main():
             trackMain(tlChosen[0], tlChosen[1], tlChosen[2], im)
         else:
             carCntrl.Drive(65)
+
+
+
+
