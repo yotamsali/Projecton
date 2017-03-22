@@ -25,6 +25,33 @@ def getCroppedImages(mask, orig):
 #******************************************************************
 
 
+#returns the traffic lights in image
+def getTrafficLights(mask, im):
+    MIN_CNT_SIZE = 4 #minimum connectivity component size
+    X_PAD = 40
+    Y_PAD = 160
+
+    #find connectivity components (רכיבי קשירות)
+    _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    dim = mask.shape[:2]
+    tls = [] #traffic lights
+    for cnt in contours:
+        #cnt = contours[-1]
+        x, y, w, h = cv2.boundingRect(cnt)
+
+        if (w < MIN_CNT_SIZE | h > MIN_CNT_SIZE):
+            continue
+
+        x, y = max(0, x - X_PAD), max(0, y - Y_PAD)
+        w, h = min(dim[1], w + X_PAD * 2), min(dim[0], h + Y_PAD * 2)
+        cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        tl_im = im[y: y + h, x: x + w]
+        tls.append((tl_im, y, x))
+
+    return tls
+
+
+
 def maskFilter(image):
     org_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -61,7 +88,7 @@ def maskFilter(image):
     res2 = cv2.bitwise_and(res, res, mask=mask)
     labels = morphology.label(res2, background=0)
 
-    matplotlib.pyplot.imshow(mask1)
+    """matplotlib.pyplot.imshow(mask1)
     matplotlib.pyplot.show()
     matplotlib.pyplot.imshow(res)
     matplotlib.pyplot.show()
@@ -69,8 +96,11 @@ def maskFilter(image):
     matplotlib.pyplot.show()
 
     x = measure.regionprops(res)
-    x =x
+    x =x"""
+    bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
+    getTrafficLights(bw_connectivity, image)
 
 
-im = cv2.imread('tlData1.png')
+
+im = cv2.imread('examples/tlData1.png')
 maskFilter(im)
