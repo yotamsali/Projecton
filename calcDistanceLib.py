@@ -4,6 +4,12 @@ import numpy as np
 import sys
 from matplotlib import pyplot as plt
 
+#Parameters: TODO change these parameters
+HEIGHT = 1.5 # of camera from ground, in meters
+RAD2PIX = 0.0034 # ratio between radians and pixels
+DIST_BOTTOM = 2.3 # distance of camera from bottom of picture in reality, in meters
+THRESHOLD_DIST = 10 #(meters) distance in which the calculation switches to finding stopline
+
 
 #receives dimensions of traffic light
 #returns distance and error
@@ -18,6 +24,7 @@ def tlDistCalc(rowSize, colSize):
 	colDist = distKnown * colKnown / colSize # proportionality by triangle similarity
 	rowDist = distKnown * rowKnown / rowSize
 	avgDist = 0.5* (colDist + rowDist)
+    #TODO update variance
 	variance = (colDist - rowDist)/min(colDist,rowDist) # this should be about zero. If not, somthing's wrong
 	return [avgDist, variance]
 
@@ -112,14 +119,18 @@ def lineDistCalc(image):
 
 	yPixels = findStopLineHeight(image)
 
-	#Parameters: TODO change these parameters
-	height = 1.5 # of camera from ground, in meters
-	radinansToPixels = 0.0034 # ratio between them
-	distBottom = 2.3 # distance of camera from bottom of picture in reality, in meters
-
 	#calc the distance from stopping line
-	tanArg = (radinansToPixels * yPixels) + math.atan(distBottom / height)
-	dist = height*math.tan(tanArg)
+	tanArg = (RAD2PIX * yPixels) + math.atan(DIST_BOTTOM / HEIGHT)
+	dist = HEIGHT * math.tan(tanArg)
 	return dist
 
 
+#returns the distance from the stop line
+#tl_im image of TL
+#x,y coordinates of upper left corner of TL
+#full_im full camera image
+def getDistance(tl_im, x, y, full_im):
+    distance, variance = tlDistCalc(tl_im.shape[0], tl_im.shape[1])
+    if (distance <= THRESHOLD_DIST):
+        distance = lineDistCalc(full_im)
+    return distance
