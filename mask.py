@@ -98,9 +98,6 @@ def maskFilter(image):
     x = measure.regionprops(res)
     x =x"""
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
-    getTrafficLights(bw_connectivity, image)
+    return getTrafficLights(bw_connectivity, image)
 
 
-
-im = cv2.imread('examples/tlData1.png')
-maskFilter(im)

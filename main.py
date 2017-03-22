@@ -11,8 +11,8 @@ import visvis as vv
 fps = 24
 path = 'tl.avi'
 strm = Streamer(path, fps)
-leftIm = imageio.imread('left.jpg')
-forwardIm = imageio.imread('forward.jpg')
+leftIm = imageio.imread('examples/left.jpg')
+forwardIm = imageio.imread('examples/forward.jpg')
 arrow = forwardIm
 
 global carCntrl

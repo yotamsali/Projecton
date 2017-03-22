@@ -4,6 +4,8 @@ def tlDetect (im):
     afterNeuralList = getAllLights(maskList)
     return afterNeuralList
 
+def getAllLights(maskList):
+    return maskList
 
 
 
