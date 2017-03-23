@@ -2,7 +2,7 @@ import serial , time
 class carControl:
     def __init__(self):
         # directions are 'F' 'U' 'L' 'R'
-        self.carSerial = serial.Serial(port='COM14')
+        #self.carSerial = serial.Serial(port='COM14')
         time.sleep(1)
         self.direction = 'F'
 
@@ -22,14 +22,10 @@ class carControl:
     def drive(self,spd):
         if (spd > 0):
             self.moveCar(1)
-        elif (spd < 0):
-            self.moveCar(2)
-        else:
-            self.moveCar(0)
         return
 
-a = carControl()
-a.moveCar(1)
-
+    def stop(self, dst):
+        self.moveCar(0)
+        return
 
 

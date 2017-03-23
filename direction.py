@@ -1,2 +1,2 @@
-def getDirection():
+def getDirection(im):
     return 'F'
