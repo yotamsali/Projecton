@@ -9,17 +9,26 @@ from pynput.keyboard import Key, Listener
 import threading
 import visvis as vv
 
-fps = 24
+RUN_TIME = 25
+FPS = 20
+
+
 path = 'examples/real.avi'
-strm = Streamer(path, fps)
+strm = Streamer(path, FPS)
+im = strm.getImage()
 leftIm = imageio.imread('examples/left.jpg')
 forwardIm = imageio.imread('examples/forward.jpg')
 arrow = forwardIm
 carCntrl = carControl()
+import time
+
+
 
 def threadShowWhile():
-    while True:
-        vv.imshow(strm.getImage())
+    global im
+    timeSet = time.time()
+    while time.time() - timeSet < RUN_TIME:
+        vv.imshow(im)
         vv.processEvents()
 
 def on_press(key):
@@ -64,26 +73,26 @@ def lostTL(oldXY, newXY, tlDim, imDim):
 #indX, indY - coordinates of upper left corner of TL
 #fullim - complete camera image
 #exits when done tracking light
-def trackMain (tl_im, indX, indY, fullim):
+def trackMain (tl_im, indX, indY):
+    global carCntrl, im
     frame_counter = 0
     CNN_RATE = 10 # num of frames that are tracked before cnn is reactivated
     oldXY = (indX, indY)
     newXY = oldXY
-    fullim_dim = fullim.shape[:2]
+    fullim_dim = im.shape[:2]
 
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #TODO call CNN on ROI
         #TODO Here to implement green blinking
+        print('got here')
         color = getColor(tl_im)
         print('tracking')
         dist = tlDistCalc(tl_im.shape[0], tl_im.shape[1])
         DecisionMaker(color, dist)
 
         oldXY = newXY
-        fullim = strm.getImage()
-        vv.imshow(fullim)
-        vv.processEvents()
-        tl_im, newXY = Track(fullim, tl_im, newXY)
+        im = strm.getImage()
+        tl_im, newXY = Track(im, tl_im, newXY)
 
 
 
@@ -102,6 +111,7 @@ def main():
     )
     listener.start()
     global carCntrl
+    global im
     while True:
         im = strm.getImage()
         im[:100, :100] = arrow
@@ -124,11 +134,10 @@ def main():
             tlChosen = 0
         if tlChosen != 0:
             print('found! started tracking')
-            print(np.array(tlChosen).shape)
-            trackMain(tlChosen[0][0], tlChosen[0][1], tlChosen[0][2], im)
+            trackMain(tlChosen[0][0], tlChosen[0][1], tlChosen[0][2])
         else:
             carCntrl.drive(65)
 
-showTh = threading.Thread(target=threadShowWhile)
+showTh = threading.Thread(target=threadShowWhile())
 showTh.start()
 main()

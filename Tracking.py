@@ -5,6 +5,7 @@ import numpy as np
 from scipy.misc import imresize
 from skimage import feature
 
+
 TEMPS_SIZES = [1,1.1,1.2] #The image is half from its original size
 MATCH_RATE = 0
 PIXEL_INDEX = 1
@@ -86,7 +87,7 @@ def Track(im, template, xy):
     new_template = im[new_template_index[HEIGHT]:new_template_index[HEIGHT]+new_template_size[HEIGHT],
                    new_template_index[WIDTH]:new_template_index[WIDTH]+new_template_size[WIDTH]]
     template = imresize(template, new_template_size)
-    new_template = np.multiply(new_template,0.5)+np.multiply(template,0.5)
+    new_template = np.multiply(new_template,0.5)+np.multiply(np.reshape(template,new_template.shape),0.5)
     return new_template, new_template_index
 
 def tic():
