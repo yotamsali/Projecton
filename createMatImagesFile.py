@@ -45,14 +45,14 @@ def ReturnXY():
             rawnegIm = cv2.imread(F)
             i += 1
             if(i == 2161):
-                print len(X)
+                print(len(X))
             if (index == 10000):
                 break
         print(dir)
         if (index == 10000):
             break
 
-    print len(X)
+    print(len(X))
     sio.savemat('images', {'data': X, 'label': labels, 'mldata_descr_ordering': mldata_descr_ordering})
     print ("yovel")
 

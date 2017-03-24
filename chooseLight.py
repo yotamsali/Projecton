@@ -46,13 +46,14 @@ def getMiniCnn():
     model = Sequential()
     model.add(Dense(20, input_dim=900, init='uniform', activation='relu'))
     model.add(Dense(7, init='uniform', activation='sigmoid'))
-    model.load_weights('/home/yovelrom/PycharmProjects/Projecton/arrows')
+    model.load_weights('~/PycharmProjects/Projecton/arrows')
     return model
 
 choosing_net = getMiniCnn()
 heat_maps = []
 
 def ReturnDirections(arrowsList):
+    global choosing_net
     answers = []
     for image in arrowsList:
         image_answer = []
