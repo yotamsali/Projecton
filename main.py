@@ -9,7 +9,8 @@ from pynput.keyboard import Key, Listener
 import threading
 import visvis as vv
 
-RUN_TIME = 25
+
+RUN_TIME = 5
 FPS = 20
 
 
@@ -28,6 +29,7 @@ def threadShowWhile():
     global im
     timeSet = time.time()
     while time.time() - timeSet < RUN_TIME:
+        im = strm.getImage()
         vv.imshow(im)
         vv.processEvents()
 
@@ -106,14 +108,18 @@ def DecisionMaker(color, distance):
 
 
 def main():
+    tic()
     listener = Listener(
         on_press=on_press
     )
     listener.start()
     global carCntrl
     global im
+    toc()
     while True:
+        tic()
         im = strm.getImage()
+        toc()
         im[:100, :100] = arrow
         vv.imshow(im)
         vv.processEvents()
@@ -138,6 +144,8 @@ def main():
         else:
             carCntrl.drive(65)
 
+import cProfile
+
 showTh = threading.Thread(target=threadShowWhile())
 showTh.start()
-main()
+#print(cProfile.run('main()'))
