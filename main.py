@@ -2,15 +2,15 @@ from ImageDetectTl import*
 from calcDistanceLib import*
 from carControl import*
 from colorGetter import*
-from direction import*
 from streamer import*
 from Tracking import*
 from chooseLight import*
+from moviepy.editor import *
+import pygame
 
 import imageio
 from pynput.keyboard import Key, Listener
 import threading
-import visvis as vv
 
 
 RUN_TIME = 5
@@ -27,14 +27,12 @@ carCntrl = carControl()
 import time
 
 
-
 def threadShowWhile():
-    global im
-    timeSet = time.time()
-    while time.time() - timeSet < RUN_TIME:
-        im = strm.getImage()
-        vv.imshow(im)
-        vv.processEvents()
+    pygame.display.set_caption(path)
+    clip = VideoFileClip(path)
+    clip.preview()
+    pygame.quit()
+
 
 def on_press(key):
     global arrow
@@ -78,13 +76,13 @@ def lostTL(oldXY, newXY, tlDim, imDim):
 #indX, indY - coordinates of upper left corner of TL
 #fullim - complete camera image
 #exits when done tracking light
-def trackMain (tl_im, indX, indY):
-    global carCntrl, im
+def trackMain (fullIm, tl_im, indX, indY):
+    global carCntrl
     frame_counter = 0
     CNN_RATE = 10 # num of frames that are tracked before cnn is reactivated
     oldXY = (indX, indY)
     newXY = oldXY
-    fullim_dim = im.shape[:2]
+    fullim_dim = fullIm.shape[:2]
 
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #TODO call CNN on ROI
@@ -96,8 +94,8 @@ def trackMain (tl_im, indX, indY):
         DecisionMaker(color, dist)
 
         oldXY = newXY
-        im = strm.getImage()
-        tl_im, newXY = Track(im, tl_im, newXY)
+        fullIm = strm.getImage()
+        tl_im, newXY = Track(fullIm, tl_im, newXY)
 
 
 
@@ -117,15 +115,12 @@ def main():
     )
     listener.start()
     global carCntrl
-    global im
     toc()
     while True:
         tic()
         im = strm.getImage()
         toc()
         im[:100, :100] = arrow
-        vv.imshow(im)
-        vv.processEvents()
         listTl = tlDetect(im)
         listOfOurTl = []
         direc = carCntrl.direction
@@ -143,7 +138,7 @@ def main():
             tlChosen = 0
         if tlChosen != 0:
             print('found! started tracking')
-            trackMain(tlChosen[0][0], tlChosen[0][1], tlChosen[0][2])
+            trackMain(im, tlChosen[0][0], tlChosen[0][1], tlChosen[0][2])
         else:
             carCntrl.drive(65)
 

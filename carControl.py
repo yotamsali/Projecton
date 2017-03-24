@@ -2,11 +2,11 @@ import serial , time
 class carControl:
     def __init__(self):
         # directions are 'F' 'U' 'L' 'R'
-        #self.carSerial = serial.Serial(port='COM14')
+        self.carSerial = serial.Serial(port='/dev/ttyACM0')
         time.sleep(1)
         self.direction = 'F'
 
-    def moveCar(command, self):
+    def moveCar(self, command):
         FORWARD = 1
         REVERSE = 2
         STOP = 0
@@ -27,5 +27,7 @@ class carControl:
     def stop(self, dst):
         self.moveCar(0)
         return
+
+
 
 
