@@ -53,6 +53,9 @@ def get_heat_map(images):
         #print(image.shape)
         #tic()
         image = image_tuple[0]
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(image, cmap='gray')#, interpolation='nearest')
+        matplotlib.pyplot.show()
         regionList = []
         #cv2.imshow("a", image)
         #cv2.waitKey(0)
@@ -73,6 +76,9 @@ def get_heat_map(images):
         print heat_map.shape
         print(toc())
         heat_maps.append(heat_map)
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(heat_map, cmap='gray')#, interpolation='nearest')
+        matplotlib.pyplot.show()
     return heat_maps
 
 #Gets the index of the biggest contour
@@ -82,7 +88,7 @@ def GetMax(contours):
         lst.append(sum(c.shape))
     return lst.index(max(lst))
 
-lst = [(cv2.imread("/home/yovelrom/Downloads/dayTrain/dayClip1/frames/dayClip1--00000.png")[322:433,602: 790], 'x', 'y')]
+lst = [(cv2.imread("/home/yovelrom/Downloads/dayTrain/dayClip1/frames/dayClip1--00000.png")[322:433,602: 790], 0, 0)]
 
 
 def ReturnLights(cutImlst):
@@ -104,6 +110,7 @@ def ReturnLights(cutImlst):
             widthAddition = SMALLEST_TL[X]
             lstSizesOptions = []
             size = []
+            print ('c')
             while widthAddition <= 40:
                 candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition),cX-int(widthAddition):cX+int(widthAddition)],[20,12])
                 #f, arr = matplotlib.pyplot.subplots(1, 1)
@@ -116,7 +123,7 @@ def ReturnLights(cutImlst):
             predictions = minicnn.predict(lstSizesOptions)
             index = -1
             for j in range(predictions.shape[0]):
-                if predictions[predictions.shape[0] - j] > 0.99:
+                if predictions[predictions.shape[0] - j-1] > 0.99:
                     returnlst.append((lstSizesOptions[predictions.shape[0] - j], y+cutImlst[i][1], x+cutImlst[i][2]))
                     break
             print(size)
