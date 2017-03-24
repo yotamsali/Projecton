@@ -42,15 +42,17 @@ def getMiniCnn():
     return model
 
 minicnn = getMiniCnn()
-heat_maps = []
+
 
 '''
 returns the 
 '''
 def get_heat_map(images):
-    for image in images:
-        print(image.shape)
-        tic()
+    heat_maps = []
+    for image_tuple in images:
+        #print(image.shape)
+        #tic()
+        image = image_tuple[0]
         regionList = []
         #cv2.imshow("a", image)
         #cv2.waitKey(0)
@@ -71,6 +73,7 @@ def get_heat_map(images):
         print heat_map.shape
         print(toc())
         heat_maps.append(heat_map)
+    return heat_maps
 
 #Gets the index of the biggest contour
 def GetMax(contours):
@@ -79,39 +82,46 @@ def GetMax(contours):
         lst.append(sum(c.shape))
     return lst.index(max(lst))
 
-lst = [cv2.imread("/home/yovelrom/Downloads/dayTrain/dayClip1/frames/dayClip1--00000.png")[322:433,602: 790]]
+lst = [(cv2.imread("/home/yovelrom/Downloads/dayTrain/dayClip1/frames/dayClip1--00000.png")[322:433,602: 790], 'x', 'y')]
 
 
 def ReturnLights(cutImlst):
-    get_heat_map(cutImlst)
+    heat_maps = get_heat_map(cutImlst)
     np.multiply(heat_maps, 255)
     returnlst = []
-    for i in range(len(heat_maps)):
+    for i in range(len(cutImlst)):
         heat = np.array(heat_maps[i], dtype=np.float32)
         heat = np.multiply(heat,255)
         hm = np.array(heat, dtype=np.uint8)
         ret, thresh = cv2.threshold(hm, 230,255,cv2.THRESH_BINARY)
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        max_contour = GetMax(contours)
-        x, y, w, h = cv2.boundingRect(contours[max_contour])
-        cX,cY = x+w/2+3,y+h/2+10
-        heightAddition = SMALLEST_TL[Y]
-        widthAddition = SMALLEST_TL[X]
-        lstSizesOptions = []
-        size = []
-        while widthAddition <= 40:
-            candidate = imresize(cutImlst[i][cY-int(heightAddition):cY+int(heightAddition),cX-int(widthAddition):cX+int(widthAddition)],[20,12])
-            f, arr = matplotlib.pyplot.subplots(1, 1)
-            arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
-            matplotlib.pyplot.show()
+        contours.sort(key=lambda c: sum(c.shape))
+        #contour = GetMax(contours)
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            cX,cY = x+w/2+3,y+h/2+10
+            heightAddition = SMALLEST_TL[Y]
+            widthAddition = SMALLEST_TL[X]
+            lstSizesOptions = []
+            size = []
+            while widthAddition <= 40:
+                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition),cX-int(widthAddition):cX+int(widthAddition)],[20,12])
+                #f, arr = matplotlib.pyplot.subplots(1, 1)
+                #arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
+                #matplotlib.pyplot.show()
 
-            lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
-            heightAddition*=FACTOR
-            widthAddition*=FACTOR
-        predictions = minicnn.predict(lstSizesOptions)
-        print(size)
-        print(predictions)
-        return y,x,h,w
+                lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
+                heightAddition*=FACTOR
+                widthAddition*=FACTOR
+            predictions = minicnn.predict(lstSizesOptions)
+            index = -1
+            for j in range(predictions.shape[0]):
+                if predictions[predictions.shape[0] - j] > 0.99:
+                    returnlst.append((lstSizesOptions[predictions.shape[0] - j], y+cutImlst[i][1], x+cutImlst[i][2]))
+                    break
+            print(size)
+            print(predictions)
+    return returnlst
 
 ReturnLights(lst)
 
