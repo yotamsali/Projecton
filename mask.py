@@ -24,12 +24,33 @@ def getCroppedImages(mask, orig):
     return [orig]
 #******************************************************************
 
+#get padding for TL image
+#returns (x, y, w, h) times the ratios given
+#im_dim image dimensions
+def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
+    #add padding
+    mid_x = x + w / 2
+    mid_y = y + h / 2
+    temp_w = w * x_ratio
+    temp_h = h * y_ratio
+    temp_x = mid_x - temp_w / 2
+    temp_y = mid_y - temp_h / 2
+
+    #fit to image
+    new_x = int(max(0, temp_x))
+    new_y = int(max(0, temp_y))
+    new_w = int(min(im_dim[1], temp_w + temp_x) - new_x)
+    new_h = int(min(im_dim[0], temp_h + temp_y) - new_y)
+
+    return new_x, new_y, new_w, new_h
+
+
 
 #returns the traffic lights in image
 def getTrafficLights(mask, im):
     MIN_CNT_SIZE = 4 #minimum connectivity component size
-    X_PAD = 40
-    Y_PAD = 160
+    X_PAD_RATIO = 3
+    Y_PAD_RATIO = 15
 
     #find connectivity components (רכיבי קשירות)
     _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -42,8 +63,7 @@ def getTrafficLights(mask, im):
         if (w < MIN_CNT_SIZE | h > MIN_CNT_SIZE):
             continue
 
-        x, y = max(0, x - X_PAD), max(0, y - Y_PAD)
-        w, h = min(dim[1], w + X_PAD * 2), min(dim[0], h + Y_PAD * 2)
+        x, y, w, h = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2])
         cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 0, 0), 2)
         tl_im = im[y: y + h, x: x + w]
         tls.append((tl_im, y, x))
@@ -99,5 +119,3 @@ def maskFilter(image):
     x =x"""
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)
-
-
