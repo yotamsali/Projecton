@@ -128,22 +128,25 @@ def maskFilter(image):
     #matplotlib.pyplot.show()
 
     x = measure.regionprops(res)
-    x =x
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)
 
-im = cv2.imread('mask test images 1/frame720.jpg')
-tls = maskFilter(im)
-print(len(tls))
-for i in range(len(tls)):
-    temp_im, y, x = tls[i]
 
-    dy, dx, _ = temp_im.shape
-    print((y, x, dy, dx))
-    cv2.rectangle(im, (x, y), (x + dx, y + dy), (0, 255, 0), 2)
-    cv2.imshow("grrrr", temp_im)
+#test code - if add this breaks main
+if __name__ == '__main__':
+    im = cv2.imread('mask test images 1/frame720.jpg')
+    tls = maskFilter(im)
+    print(len(tls))
+    for i in range(len(tls)):
+        temp_im, y, x = tls[i]
+
+        dy, dx, _ = temp_im.shape
+        print((y, x, dy, dx))
+        cv2.rectangle(im, (x, y), (x + dx, y + dy), (0, 255, 0), 2)
+        cv2.imshow("grrrr", temp_im)
+        cv2.waitKey(0)
+    matplotlib.pyplot.imshow(im)
+    matplotlib.pyplot.show()
+
     cv2.waitKey(0)
-matplotlib.pyplot.imshow(im)
-matplotlib.pyplot.show()
 
-cv2.waitKey(0)

@@ -24,33 +24,44 @@ leftIm = imageio.imread('examples/left.jpg')
 forwardIm = imageio.imread('examples/forward.jpg')
 arrow = forwardIm
 carCntrl = carControl()
+arrowChar = 'F'
 import time
 
 
 def threadShowWhile():
+    listener = Listener(
+        on_press=on_press
+    )
+    listener.start()
+    '''''
     pygame.display.set_caption(path)
     clip = VideoFileClip(path)
     clip.preview()
     pygame.quit()
+    '''''
 
 
 def on_press(key):
     global arrow
     global carCntrl
+    global arrowChar
     if key == Key.up :
         print("UP")
         arrow = forwardIm
         carCntrl.direction = 'F'
+        arrowChar = 'F'
     if key == Key.down :
         print("DOWN")
     if key == Key.left :
         print("LEFT")
         arrow = leftIm
         carCntrl.direction = 'L'
+        arrowChar = 'L'
     if key == Key.right :
         print("RIGHT")
         arrow = leftIm[:,::-1]
         carCntrl.direction = 'R'
+        arrowChar = 'R'
 
 
 #checks if the tracker lost the traffic light
@@ -110,17 +121,14 @@ def DecisionMaker(color, distance):
 
 def main():
     tic()
-    listener = Listener(
-        on_press=on_press
-    )
-    listener.start()
     global carCntrl
     toc()
     while True:
         tic()
         im = strm.getImage()
         toc()
-        im[:100, :100] = arrow
+        #TODO
+        #im[:100, :100] = arrow
         listTl = tlDetect(im)
         listOfOurTl = []
         direc = carCntrl.direction
@@ -143,7 +151,6 @@ def main():
             carCntrl.drive(65)
 
 
-import cProfile
 showTh = threading.Thread(target=threadShowWhile())
 showTh.start()
-#print(cProfile.run('main()'))
+main()

@@ -73,7 +73,7 @@ def get_heat_map(images):
                 weird_map[i,j] = predictions[i*height +j]
         '''
         heat_map = np.reshape(predictions,(image.shape[Y]- HEIGHT,image.shape[X]-WIDTH))
-        print heat_map.shape
+        print (heat_map.shape)
         print(toc())
         heat_maps.append(heat_map)
         f, arr = matplotlib.pyplot.subplots(1, 1)
