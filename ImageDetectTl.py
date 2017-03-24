@@ -4,7 +4,7 @@ from tlDetectionCNN import*
 def tlDetect (im):
     im = np.array(im)
     maskList = maskFilter(im)
-    afterNeuralList = getAllLights(maskList)
+    afterNeuralList = ReturnLights(maskList)
     return afterNeuralList
 
 

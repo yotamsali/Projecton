@@ -88,8 +88,6 @@ def GetMax(contours):
         lst.append(sum(c.shape))
     return lst.index(max(lst))
 
-lst = [(cv2.imread("/home/yovelrom/Downloads/dayTrain/dayClip1/frames/dayClip1--00000.png")[322:433,602: 790], 0, 0)]
-
 
 def ReturnLights(cutImlst):
     heat_maps = get_heat_map(cutImlst)

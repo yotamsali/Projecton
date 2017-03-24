@@ -14,7 +14,7 @@ import threading
 
 
 RUN_TIME = 5
-FPS = 20
+FPS = 10
 
 
 path = 'examples/real.avi'
