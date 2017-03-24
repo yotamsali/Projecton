@@ -130,7 +130,6 @@ def ReturnLights(cutImlst):
             print(predictions)
     return returnlst
 
-ReturnLights(lst)
 
 
 
