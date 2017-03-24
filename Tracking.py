@@ -1,10 +1,10 @@
 import math
 
-import cv2
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-from skimage import io, feature
+from skimage import feature
+
 
 TEMPS_SIZES = [1,1.1,1.2] #The image is half from its original size
 MATCH_RATE = 0
@@ -69,9 +69,9 @@ def Track(im, template, xy):
     #cv2.imwrite("/home/yovelrom/Downloads/gif/" + number_string + ".jpg", camera)
     #k = cv2.waitKey(0) & 0xff
 
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(imNew, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
+    #f, arr = matplotlib.pyplot.subplots(1, 1)
+    #arr.imshow(imNew, cmap='gray', interpolation='nearest')
+    #matplotlib.pyplot.show()
     for t in possible_templates_list:
         filters.append(feature.match_template(imNew, t, pad_input=False))
         i+=1
@@ -87,7 +87,7 @@ def Track(im, template, xy):
     new_template = im[new_template_index[HEIGHT]:new_template_index[HEIGHT]+new_template_size[HEIGHT],
                    new_template_index[WIDTH]:new_template_index[WIDTH]+new_template_size[WIDTH]]
     template = imresize(template, new_template_size)
-    new_template = np.multiply(new_template,0.5)+np.multiply(template,0.5)
+    new_template = np.multiply(new_template,0.5)+np.multiply(np.reshape(template,new_template.shape),0.5)
     return new_template, new_template_index
 
 def tic():
@@ -112,7 +112,7 @@ def string(i):
     new += str(i)
     return new
 
-
+"""""
 camera = io.imread('/home/yovelrom/Downloads/dayTrain/dayClip3/frames/dayClip3--00000.png')
 #camera = color.rgb2hsv(camera)
 
@@ -144,3 +144,4 @@ matplotlib.pyplot.plot(runtime)
 matplotlib.pyplot.ylabel('running-time (sec)')
 matplotlib.pyplot.xlabel('frame')
 matplotlib.pyplot.show()
+"""""
