@@ -2,8 +2,14 @@ import serial , time
 class carControl:
     def __init__(self):
         # directions are 'F' 'U' 'L' 'R'
-        self.carSerial = serial.Serial(port='/dev/ttyACM0')
-        time.sleep(1)
+        arduino_ports = [
+            p.device
+            for p in serial.tools.list_ports.comports()
+            if 'Arduino' in p.description
+            ]
+        if not arduino_ports:
+            raise IOError("No Arduino found")
+        self.carSerial = serial.Serial(arduino_ports[0])
         self.direction = 'F'
 
     def moveCar(self, command):

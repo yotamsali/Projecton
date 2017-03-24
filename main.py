@@ -7,7 +7,7 @@ from Tracking import*
 from chooseLight import*
 from moviepy.editor import *
 import pygame
-
+import visvis as vv
 import imageio
 from pynput.keyboard import Key, Listener
 import threading
@@ -33,6 +33,13 @@ def threadShowWhile():
         on_press=on_press
     )
     listener.start()
+    while True:
+        tic()
+        im = strm.getImage()
+        print(toc())
+        tic()
+        vv.imshow()
+        print(toc())
     '''''
     pygame.display.set_caption(path)
     clip = VideoFileClip(path)
@@ -126,7 +133,7 @@ def main():
     while True:
         tic()
         im = strm.getImage()
-        toc()
+        print(toc())
         #TODO
         #im[:100, :100] = arrow
         listTl = tlDetect(im)
