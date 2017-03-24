@@ -49,8 +49,10 @@ def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
 #returns the traffic lights in image
 def getTrafficLights(mask, im):
     MIN_CNT_SIZE = 4 #minimum connectivity component size
+    MAX_CNT_SIZE = 40 #maximum     "           "        "
+    MAX_DIM_RATIO = 1.5 #max ratio between width and height
     X_PAD_RATIO = 3
-    Y_PAD_RATIO = 15
+    Y_PAD_RATIO = 8
 
     #find connectivity components (רכיבי קשירות)
     _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -60,13 +62,18 @@ def getTrafficLights(mask, im):
         #cnt = contours[-1]
         x, y, w, h = cv2.boundingRect(cnt)
 
-        if (w < MIN_CNT_SIZE | h > MIN_CNT_SIZE):
+        if (w < MIN_CNT_SIZE or h < MIN_CNT_SIZE):
+            continue
+        if (w > MAX_CNT_SIZE or h > MAX_CNT_SIZE):
+            continue
+        if ((w / h > MAX_DIM_RATIO) or (h / w > MAX_DIM_RATIO)):
             continue
 
+
         x, y, w, h = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2])
-        cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 0, 0), 2)
         tl_im = im[y: y + h, x: x + w]
         tls.append((tl_im, y, x))
+        print((y,x,h,w))
 
     return tls
 
@@ -95,8 +102,8 @@ def maskFilter(image):
     #matplotlib.pyplot.show()
 
     #print hsv[966][304]
-    lower_red1 = np.array([90,150,180])
-    upper_red1 = np.array([130,255,255])
+    lower_red1 = np.array([115,49,122])
+    upper_red1 = np.array([123,143,255])
     lower_green = np.array([15,150,100])
     upper_green = np.array([35,255,255])
 
@@ -104,18 +111,39 @@ def maskFilter(image):
     mask2 = cv2.inRange(hsv, lower_green, upper_green)
     mask = cv2.bitwise_or(mask1, mask2)
 
-    kernel = np.ones((8,8),np.uint8)
-    res2 = cv2.bitwise_and(res, res, mask=mask)
-    labels = morphology.label(res2, background=0)
+    #kernel = np.ones((8,8),np.uint8)
+    res2 = cv2.bitwise_and(res, res, mask=mask1)
+    #labels = morphology.label(res2, background=0)
 
-    """matplotlib.pyplot.imshow(mask1)
+
+    #matplotlib.pyplot.imshow(image)
+    #matplotlib.pyplot.show()
+    matplotlib.pyplot.imshow(org_hsv)
     matplotlib.pyplot.show()
-    matplotlib.pyplot.imshow(res)
-    matplotlib.pyplot.show()
+    #matplotlib.pyplot.imshow(res)
+    #matplotlib.pyplot.show()
     matplotlib.pyplot.imshow(res2)
     matplotlib.pyplot.show()
+    #matplotlib.pyplot.imshow(mask)
+    #matplotlib.pyplot.show()
 
     x = measure.regionprops(res)
-    x =x"""
+    x =x
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)
+
+im = cv2.imread('mask test images 1/frame720.jpg')
+tls = maskFilter(im)
+print(len(tls))
+for i in range(len(tls)):
+    temp_im, y, x = tls[i]
+
+    dy, dx, _ = temp_im.shape
+    print((y, x, dy, dx))
+    cv2.rectangle(im, (x, y), (x + dx, y + dy), (0, 255, 0), 2)
+    cv2.imshow("grrrr", temp_im)
+    cv2.waitKey(0)
+matplotlib.pyplot.imshow(im)
+matplotlib.pyplot.show()
+
+cv2.waitKey(0)

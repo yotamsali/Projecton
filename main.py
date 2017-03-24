@@ -5,6 +5,9 @@ from colorGetter import*
 from direction import*
 from streamer import*
 from Tracking import*
+from chooseLight import*
+
+import imageio
 from pynput.keyboard import Key, Listener
 import threading
 import visvis as vv
@@ -129,7 +132,7 @@ def main():
         print(np.array(listTl).shape)
         for cam in listTl:
             print(np.array(cam).shape)
-            if (getDirection(cam[0]) == direc):
+            if (ReturnDirections(cam[0]) == direc):
                 listOfOurTl += [cam]
                 print(np.array(listOfOurTl).shape)
         if len(listOfOurTl) > 1:
@@ -144,8 +147,8 @@ def main():
         else:
             carCntrl.drive(65)
 
-import cProfile
 
+import cProfile
 showTh = threading.Thread(target=threadShowWhile())
 showTh.start()
 #print(cProfile.run('main()'))
