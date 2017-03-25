@@ -121,9 +121,11 @@ def getColor(img):
     else:
         return ERROR
 
+"""""
 image = cv2.cvtColor(cv2.imread("./my/frame192.jpg"), cv2.COLOR_BGR2RGB)
 f, arr = matplotlib.pyplot.subplots(1, 1)
 arr.imshow(image, cmap='gray', interpolation='nearest')
 matplotlib.pyplot.show()
 print(getColor(image[338:367, 805:819]))
 #print(getColor(image[227:324, 475:522]))
+"""""
