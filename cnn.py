@@ -41,9 +41,9 @@ def ReturnXY():
             rawnegIm = cv2.imread(F)
             i += 1
             if(i == 2161):
-                print len(X)
+                print (len(X))
         print(dir)
-    print len(X)
+    print (len(X))
     return X, Y
 
 

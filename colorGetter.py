@@ -37,7 +37,6 @@ def getTopMiddleBottom(im):
     top = im[0: cut_1, 0: width]
     middle = im[cut_1: cut_2, 0: width]
     bottom = im[cut_2: height, 0: width]
-    print("top" + str(top.shape))
     return top, middle, bottom
 
 
