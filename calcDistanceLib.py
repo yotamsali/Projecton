@@ -68,8 +68,8 @@ def hough(img, show_img):
             if ((theta <= 0.3 * 2 * 3.14) & (theta >= 0.2 * 2 * 3.14)):
                 #block comment prints picture and draws lines
                 f, arr = matplotlib.pyplot.subplots(1, 1)
-                #arr.imshow(show_img, cmap='gray')  # , interpolation='nearest')
-                #matplotlib.pyplot.show()
+                arr.imshow(show_img, cmap='gray')  # , interpolation='nearest')
+                matplotlib.pyplot.show()
                 a = np.cos(theta)
                 b = np.sin(theta)
                 x0 = a * rho
@@ -107,8 +107,8 @@ def findStopLineHeight(image):
     kernel = np.ones((5, 20), np.uint8)
     erosion = cv2.erode(blurred, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
-    #matplotlib.pyplot.imshow(dilation)
-    #matplotlib.pyplot.show()
+    matplotlib.pyplot.imshow(dilation)
+    matplotlib.pyplot.show()
 
 
     lines = hough(dilation,image)
@@ -143,11 +143,10 @@ def getDistance(tl_im, x, y, full_im):
         distance = lineDistCalc(full_im)
     return distance
 
-"""""
+
 im = cv2.imread('video/frame108.jpg')
 im = im[0:len(im)-NO_CAR, 0:len(im[0])]
 print(im)
 matplotlib.pyplot.imshow(im)
 matplotlib.pyplot.show()
 lineDistCalc(im)
-"""""
