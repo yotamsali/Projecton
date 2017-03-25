@@ -98,9 +98,10 @@ def Track(im, template, xy):
 
     new_template = im[startH: endH, startW: endW]
 
-    template = imresize(template, new_template_size)
-    new_template = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
-                   np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
+    # not relevant - merge old with new
+    # template = imresize(template, new_template_size)
+    # new_template = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
+    #              np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
 
     return new_template, new_template_index
 
