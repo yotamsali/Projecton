@@ -4,7 +4,7 @@ import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
 from skimage import feature
-
+import cv2
 
 TEMPS_SIZES = [1,1.1,1.2] #The image is half from its original size
 MATCH_RATE = 0
@@ -13,6 +13,10 @@ TEMPLATE_INDEX = 2
 HEIGHT = 0
 WIDTH = 1
 
+DECREACE_UPPER_BOUND = 40
+INCREACE_LOWER_BOUND = 1.1
+
+OLD_TO_NEW_RATIO = 0.7
 
 def my_imresize(im, size):
     im = imresize(im, size)
@@ -55,23 +59,21 @@ def max_spot(arr):
 # gets image and a traffic light template (from a moment ago)
 # returns new relevant template and the location of the traffic light right now
 def Track(im, template, xy):
-    size = template.shape
-    up= xy[0] - int(size[0]*size[0]/40)
-    down = xy[0] + int(size[0]*1.1)
-    left = int(xy[1] - 2*size[1] - math.ceil(math.pow(2,size[1]*(im.shape[1]/2 - xy[1])/700)))
-    right = int( xy[1] + 2*size[1] + math.ceil(math.pow(2,size[1]*(-im.shape[1]/2 + xy[1])/700)))
 
+    # bounds of the template to be found, min/max to keep the bound legal
+    size = template.shape
+    up = max(xy[HEIGHT] - int(size[HEIGHT] * size[HEIGHT] / DECREACE_UPPER_BOUND), 0)
+    down = min(xy[HEIGHT] + int(size[HEIGHT]*INCREACE_LOWER_BOUND), im.shape[HEIGHT]-1)
+    left = max(int(xy[WIDTH] - 2*size[WIDTH]), 0)# - math.ceil(math.pow(2,size[1]*(im.shape[1]/2 - xy[1])/1920)))
+    right = min(int( xy[WIDTH] + 2*size[WIDTH]), im.shape[WIDTH]-1) # + math.ceil(math.pow(2,size[1]*(-im.shape[1]/2 + xy[1])/700)))
     imNew = im[up:down, left:right]
+
+    # get new templates
     possible_templates_list = templates(template)
     filters = []
     i = 0;
-    #cv2.imshow('img2', imNew)
-    #cv2.imwrite("/home/yovelrom/Downloads/gif/" + number_string + ".jpg", camera)
-    #k = cv2.waitKey(0) & 0xff
 
-    #f, arr = matplotlib.pyplot.subplots(1, 1)
-    #arr.imshow(imNew, cmap='gray', interpolation='nearest')
-    #matplotlib.pyplot.show()
+    # match the templates
     for t in possible_templates_list:
         filters.append(feature.match_template(imNew, t, pad_input=False))
         i+=1
@@ -80,10 +82,13 @@ def Track(im, template, xy):
         arr.imshow(feature.match_template(imNew, t, pad_input=False), cmap='gray', interpolation='nearest')
         matplotlib.pyplot.show()
         """
+    # find best match
     traffic_light = max_spot(filters)
 
+    # get the properties of the new template - first - size, second - location on the screen
     new_template_size = possible_templates_list[traffic_light[TEMPLATE_INDEX]].shape
-    new_template_index = [traffic_light[PIXEL_INDEX][0]+up, traffic_light[PIXEL_INDEX][1]+left]
+    new_template_index = [traffic_light[PIXEL_INDEX][HEIGHT]
+                          +up, traffic_light[PIXEL_INDEX][WIDTH]+left]
 
 
     startH = new_template_index[HEIGHT]
@@ -94,7 +99,9 @@ def Track(im, template, xy):
     new_template = im[startH: endH, startW: endW]
 
     template = imresize(template, new_template_size)
-    new_template = np.multiply(new_template,0.5)+np.multiply(np.reshape(template,new_template.shape),0.5)
+    new_template = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
+                   np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
+
     return new_template, new_template_index
 
 def tic():
