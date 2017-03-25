@@ -61,8 +61,8 @@ def getTrafficLights(mask, im):
     MIN_CNT_SIZE = 4 #minimum connectivity component size
     MAX_CNT_SIZE = 40 #maximum     "           "        "
     MAX_DIM_RATIO = 1.5 #max ratio between width and height
-    X_PAD_RATIO = 3
-    Y_PAD_RATIO = 12
+    X_PAD_RATIO = 6
+    Y_PAD_RATIO = 16
 
     #find connectivity components (רכיבי קשירות)
     _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -128,7 +128,7 @@ def maskFilter(image):
     #kernel = np.ones((8,8),np.uint8)
     res2 = cv2.bitwise_and(res, res, mask=mask1)
     #labels = morphology.label(res2, background=0)
-
+    """
     try:
         matplotlib.pyplot.imshow(image)
         matplotlib.pyplot.show()
@@ -149,6 +149,7 @@ def maskFilter(image):
         matplotlib.pyplot.show()
     except:
         pass
+    """
     try:
         matplotlib.pyplot.imshow(mask)
         matplotlib.pyplot.show()

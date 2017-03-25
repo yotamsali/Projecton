@@ -10,9 +10,9 @@ from skimage import io, feature , color, exposure
 
 
 FACTOR = 1.2
-SMALLEST_TL = [6,3]
-MIDDLE_TL = [23,12]
-LARGE_TL = [45,23]
+SMALLEST_TL = [8,4]
+MIDDLE_TL = [24,12]
+LARGE_TL = [44,22]
 SMALL = 0
 MEDIUM = 1
 LARGE = 2
@@ -63,7 +63,7 @@ def get_heat_map(images):
     sizes = []
     for image_tuple in images:
         #print(image.shape)
-        #tic()
+        tic()
 
         image = image_tuple[0]
         #f, arr = matplotlib.pyplot.subplots(1, 1)
@@ -91,7 +91,7 @@ def get_heat_map(images):
         heat_map = np.reshape(predictions,(image.shape[Y]- SIZES[newSize][Y],
                                            image.shape[X]-SIZES[newSize][X]))
         print (heat_map.shape)
-        print(toc())
+        print("heat map"+str(toc()) +" shape:" + str(image.shape))
         heat_maps.append(heat_map)
         #if heat_map != []:
         #    f, arr = matplotlib.pyplot.subplots(1, 1)
@@ -103,6 +103,7 @@ def get_heat_map(images):
     return heat_maps, sizes
 
 def addImages(image):
+
     candidates = []
     newSize = -1
     # check im size and fit the candidates to it
@@ -119,14 +120,14 @@ def addImages(image):
     else:
         step = (LARGE_TL[Y], LARGE_TL[X])
         newSize = LARGE
-
+    tic()
     for y in range(size[Y] - step[Y]):
         for x in range(size[X] - step[X]):
             rawRegion = imresize(image[y:y + step[Y], x:x + step[X]], (HEIGHT,WIDTH))
             region = [color for row in rawRegion for pix in row for color in pix]
             candidates.append(region)
+    print("time - "+str(toc()))
     return candidates, newSize
-
 # Gets the index of the biggest contour
 def GetMax(contours):
     lst = []
@@ -136,7 +137,7 @@ def GetMax(contours):
 
 
 def ReturnLights(cutImlst):
-    tic()
+
     heat_maps, sizes = get_heat_map(cutImlst)
     print("CNN - "+str(toc()))
     #np.multiply(heat_maps, 255)
@@ -160,13 +161,15 @@ def ReturnLights(cutImlst):
            matplotlib.pyplot.show()
         except:
            pass
+        if len(contours) == 0:
+            continue
         contours = [contours[GetMax(contours)]]
         fit_options = []
         fit_value = []
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
 
-            cX,cY = x + w//2 + SIZES[sizes[i]][X]//4, y + h//2 + SIZES[sizes[i]][Y]//4
+            cX,cY = x + w//2 + SIZES[sizes[i]][X]//2, y + h//2 + SIZES[sizes[i]][Y]//4
             heightAddition = SMALLEST_TL[Y]
             widthAddition = SMALLEST_TL[X]
             lstSizesOptions = []
@@ -189,10 +192,23 @@ def ReturnLights(cutImlst):
                 widthAddition += 1
             if len(lstSizesOptions) == 0:
                 continue
+
             predictions = minicnn.predict(lstSizesOptions)
+            f, arr = matplotlib.pyplot.subplots(1, 1)
+            arr.imshow(candidate, cmap='gray')  # , interpolation='nearest')
+            try:
+                matplotlib.pyplot.show()
+            except:
+                pass
+
+            print(size)
+            print(predictions)
+
             # get max match
             if max(predictions) < MATCH_THRESHOLD:
                 continue
+
+
             max_match = np.amax(predictions)
             index = np.where(predictions == max_match)
             max_fit_size = size[index[0][0]]
@@ -204,12 +220,11 @@ def ReturnLights(cutImlst):
             except:
                 pass
             fit_value.append(max_match)
-            print(size)
-            print(predictions)
+
         if len(fit_options) == 0:
             continue
         index = fit_value.index(max(fit_value))
-        returnlst.append(fit_options[index])
+        returnlst.append((fit_options[index],y+cutImlst[i][1],x+cutImlst[i][2]))
     return returnlst
 
 
