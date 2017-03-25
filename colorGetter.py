@@ -1,6 +1,7 @@
 import cv2
 from PIL import Image, ImageStat
 import numpy
+import matplotlib
 
 HEIGHT_WIDTH_RATIO = 2.2
 THRESHOLD = 30
@@ -36,6 +37,7 @@ def getTopMiddleBottom(im):
     top = im[0: cut_1, 0: width]
     middle = im[cut_1: cut_2, 0: width]
     bottom = im[cut_2: height, 0: width]
+    print("top" + str(top.shape))
     return top, middle, bottom
 
 
@@ -49,6 +51,10 @@ def brightness(im):
 
 
 
+
+
+
+
 # TODO make sure that img is cropped image of traffic light
 #returns the current state of the traffic light
 #returns -1 in case of error
@@ -57,8 +63,9 @@ def getColor(img):
     TOP = 0
     MIDDLE = 1
     BOTTOM = 2
-    black = getBlackBox(img)
-    top, middle, bottom = getTopMiddleBottom(black)
+    # black = getBlackBox(img) todo: fix this function
+    top, middle, bottom = getTopMiddleBottom(img)
+
 
     #get brightness
     brght_arr = [brightness(top), brightness(middle), brightness(bottom)]
