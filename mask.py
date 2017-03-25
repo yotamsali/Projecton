@@ -5,10 +5,12 @@ from skimage import measure
 from skimage import morphology
 
 # IMPORTANT PARAMETERS*****************************************************
-RED_LOW = [190,30,30]
-RED_UP = [255,150,150]
-GREEN_LOW = [20,190,20]
-GREEN_UP = [100,255,100]
+RED_LOW = [0,85,170]
+RED_UP = [75,210,255]
+GREEN_LOW = [100,100,100]
+GREEN_UP = [100,100,100]
+DILATION_RADIUS = 8
+OPEN_RADIUS = 2
 #**************************************************************************
 
 
@@ -60,7 +62,7 @@ def getTrafficLights(mask, im):
     MAX_CNT_SIZE = 40 #maximum     "           "        "
     MAX_DIM_RATIO = 1.5 #max ratio between width and height
     X_PAD_RATIO = 3
-    Y_PAD_RATIO = 8
+    Y_PAD_RATIO = 12
 
     #find connectivity components (רכיבי קשירות)
     _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -88,6 +90,7 @@ def getTrafficLights(mask, im):
 
 
 def maskFilter(image):
+
     org_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
@@ -97,8 +100,9 @@ def maskFilter(image):
 
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(gray, lower_black, upper_black)
-    kernel = np.ones((8,8),np.uint8)
-    mask = cv2.dilate(mask,kernel,iterations = 1)
+    kernelDILATION = np.ones((DILATION_RADIUS,DILATION_RADIUS),np.uint8)
+    kernelOPEN = np.ones((OPEN_RADIUS,OPEN_RADIUS),np.uint8)
+    mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
     # Bitwise-OR mask and original image
     res = cv2.bitwise_and(image, image, mask=mask)
@@ -118,6 +122,8 @@ def maskFilter(image):
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
     mask2 = cv2.inRange(hsv, lower_green, upper_green)
     mask = cv2.bitwise_or(mask1, mask2)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOPEN)
+    mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
     #kernel = np.ones((8,8),np.uint8)
     res2 = cv2.bitwise_and(res, res, mask=mask1)
@@ -148,6 +154,7 @@ def maskFilter(image):
         matplotlib.pyplot.show()
     except:
         pass
+
     x = measure.regionprops(res)
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)

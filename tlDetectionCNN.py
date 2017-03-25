@@ -9,7 +9,7 @@ from scipy.misc import imresize
 from skimage import io, feature , color, exposure
 
 
-FACTOR = 1.1
+FACTOR = 1.2
 SMALLEST_TL = [6,3]
 MIDDLE_TL = [23,12]
 LARGE_TL = [45,23]
@@ -28,6 +28,9 @@ right = 1
 
 HEIGHT = 20
 WIDTH = 12
+
+OPEN_RADIUS = 1
+MATCH_THRESHOLD = 0.7
 
 def tic():
     #Homemade version of matlab tic and toc functions
@@ -63,9 +66,9 @@ def get_heat_map(images):
         #tic()
 
         image = image_tuple[0]
-        f, arr = matplotlib.pyplot.subplots(1, 1)
-        arr.imshow(image, cmap='gray')  # , interpolation='nearest')
-        matplotlib.pyplot.show()
+        #f, arr = matplotlib.pyplot.subplots(1, 1)
+        #arr.imshow(image, cmap='gray')  # , interpolation='nearest')
+        #matplotlib.pyplot.show()
 
         regionList, newSize = addImages(image)
         if len(regionList[-1]) <= 0 :
@@ -90,10 +93,10 @@ def get_heat_map(images):
         print (heat_map.shape)
         print(toc())
         heat_maps.append(heat_map)
-        if heat_map != []:
-            f, arr = matplotlib.pyplot.subplots(1, 1)
-            arr.imshow(heat_map, cmap='gray')#, interpolation='nearest')
-            matplotlib.pyplot.show()
+        #if heat_map != []:
+        #    f, arr = matplotlib.pyplot.subplots(1, 1)
+        #    arr.imshow(heat_map, cmap='gray')#, interpolation='nearest')
+        #    matplotlib.pyplot.show()
 
 
 
@@ -124,7 +127,7 @@ def addImages(image):
             candidates.append(region)
     return candidates, newSize
 
-#Gets the index of the biggest contour
+# Gets the index of the biggest contour
 def GetMax(contours):
     lst = []
     for c in contours:
@@ -145,9 +148,13 @@ def ReturnLights(cutImlst):
         heat = np.multiply(heat,255)
         hm = np.array(heat, dtype=np.uint8)
         ret, thresh = cv2.threshold(hm, 230,255,cv2.THRESH_BINARY)
+        kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
+        thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernelOPEN)
         img, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         #contours = contours.sort(key=lambda c: sum(c.shape))
         #contour = GetMax(contours)
+        fit_options = []
+        fit_value = []
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
             cX,cY = x + w//2 + SIZES[sizes[i]][X]//2, y + h//2 + SIZES[sizes[i]][Y]//2
@@ -156,24 +163,36 @@ def ReturnLights(cutImlst):
             lstSizesOptions = []
             size = []
             print ('c')
-            while widthAddition <= 40:
+            while widthAddition <= 40 and cY >= int(heightAddition) and cX >= int(widthAddition) :
                 candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition),cX-int(widthAddition):cX+int(widthAddition)],[20,12])
-                #f, arr = matplotlib.pyplot.subplots(1, 1)
-                #arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
-                #matplotlib.pyplot.show()
-
+                f, arr = matplotlib.pyplot.subplots(1, 1)
+                arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
+                try:
+                    matplotlib.pyplot.show()
+                except:
+                    pass
+                size.append((int(heightAddition), int(widthAddition)))
                 lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
-                heightAddition*=FACTOR
-                widthAddition*=FACTOR
-
+                heightAddition += 1
+                widthAddition += 1
+            if len(lstSizesOptions) == 0:
+                continue
             predictions = minicnn.predict(lstSizesOptions)
-
-            for j in range(predictions.shape[0]):
-                if predictions[predictions.shape[0] - j-1] > 0.99:
-                    returnlst.append((lstSizesOptions[predictions.shape[0] - j], y+cutImlst[i][1], x+cutImlst[i][2]))
-                    break
+            # get max match
+            if max(predictions) < MATCH_THRESHOLD:
+                continue
+            max_match = np.amax(predictions)
+            index = np.where(predictions == max_match)
+            max_fit_size = size[index[0][-1]]
+            fit_options.append((cutImlst[i][0][cY - max_fit_size[Y]:
+            cY + max_fit_size[Y], cX - max_fit_size[X]: cX + max_fit_size[X]]))
+            fit_value.append(max_match)
             print(size)
             print(predictions)
+        if len(fit_options) == 0:
+            continue
+        index = fit_value.index(max(fit_value))
+        returnlst.append(fit_options[index])
     return returnlst
 
 
