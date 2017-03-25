@@ -1,7 +1,7 @@
 import cv2
-from PIL import Image, ImageStat
-import numpy
-import matplotlib
+import numpy as np
+from mask import maskFilter
+import matplotlib.pyplot as plt
 
 HEIGHT_WIDTH_RATIO = 2.2
 THRESHOLD = 30
@@ -17,14 +17,9 @@ ERROR = -1
 
 #receives an image of a traffic light and returns the cropped image of only the black part
 #(without blue circle above)
-#assumes that image is well cropped beforehand
 
 def getBlackBox(im):
-    height, width, temp = im.shape
-    new_height = int(width * HEIGHT_WIDTH_RATIO)
-    crop_img = im[height - new_height: height, 0: width]
-    return crop_img
-
+    return maskFilter(im)[0][0]
 
 #revieces image of traffic light black box
 #returns tuple containing three images
@@ -44,8 +39,8 @@ def getTopMiddleBottom(im):
 
 def brightness(im):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    average_color_per_row = numpy.average(gray, axis=0)
-    average_color = numpy.average(average_color_per_row, axis=0)
+    average_color_per_row = np.average(gray, axis=0)
+    average_color = np.average(average_color_per_row, axis=0)
     return average_color
 
 
@@ -88,3 +83,11 @@ def getColor(img):
         return OFF
     else:
         return ERROR
+
+orig = cv2.imread('tl_im.jpg')
+plt.imshow(orig)
+plt.show()
+new = getBlackBox(orig)
+plt.imshow(new)
+plt.show()
+cv2.waitKey(0)
