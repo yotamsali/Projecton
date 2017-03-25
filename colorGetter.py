@@ -4,7 +4,7 @@ import numpy
 import matplotlib.pyplot
 
 HEIGHT_WIDTH_RATIO = 2.2
-THRESHOLD = 5
+THRESHOLD = 10
 
 #states of the traffic light
 GREEN = "Green"
@@ -14,7 +14,7 @@ RED = "Red"
 OFF = "Off"
 ERROR = -1
 
-RED_LOW = [0,0,170]
+RED_LOW = [0,50,170]
 RED_UP = [30,255,255]
 GREEN_LOW = [85,90,90]
 GREEN_UP = [95,255,255]
