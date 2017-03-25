@@ -5,11 +5,11 @@ from skimage import measure
 from skimage import morphology
 
 # IMPORTANT PARAMETERS*****************************************************
-RED_LOW = [0,85,170]
-RED_UP = [75,210,255]
+RED_LOW = [100,200,160]
+RED_UP = [210,255,255]
 GREEN_LOW = [100,100,100]
 GREEN_UP = [100,100,100]
-DILATION_RADIUS = 8
+DILATION_RADIUS = 13
 OPEN_RADIUS = 2
 #**************************************************************************
 

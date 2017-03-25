@@ -29,7 +29,7 @@ right = 1
 HEIGHT = 20
 WIDTH = 12
 
-OPEN_RADIUS = 1
+OPEN_RADIUS = 2
 MATCH_THRESHOLD = 0.7
 
 def tic():
@@ -144,36 +144,48 @@ def ReturnLights(cutImlst):
     for i in range(len(cutImlst)):
         if len(heat_maps[i]) <= 0:
             continue
+
         heat = np.array(heat_maps[i], dtype=np.float32)
         heat = np.multiply(heat,255)
         hm = np.array(heat, dtype=np.uint8)
         ret, thresh = cv2.threshold(hm, 230,255,cv2.THRESH_BINARY)
-        kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
-        thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernelOPEN)
+
+        #kernelOPEN = np.ones((OPEN_RADIUS, heat.shape[X], OPEN_RADIUS), np.uint8)
+        #thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernelOPEN)
         img, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #contours = contours.sort(key=lambda c: sum(c.shape))
-        #contour = GetMax(contours)
+
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(thresh, cmap='gray')#, interpolation='nearest')
+        try:
+           matplotlib.pyplot.show()
+        except:
+           pass
+        contours = [contours[GetMax(contours)]]
         fit_options = []
         fit_value = []
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
-            cX,cY = x + w//2 + SIZES[sizes[i]][X]//2, y + h//2 + SIZES[sizes[i]][Y]//2
+
+            cX,cY = x + w//2 + SIZES[sizes[i]][X]//4, y + h//2 + SIZES[sizes[i]][Y]//4
             heightAddition = SMALLEST_TL[Y]
             widthAddition = SMALLEST_TL[X]
             lstSizesOptions = []
             size = []
             print ('c')
-            while widthAddition <= 40 and cY >= int(heightAddition) and cX >= int(widthAddition) :
-                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition),cX-int(widthAddition):cX+int(widthAddition)],[20,12])
+            while widthAddition <= 40 and cY >= int(heightAddition) and cX >= int(widthAddition) \
+                        and cutImlst[i][0].shape[Y]-cY  >= int(heightAddition) and cutImlst[i][0].shape[X]-cX >= int(widthAddition) :
+                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition), cX-int(widthAddition):cX+int(widthAddition)],[20,12])
+                """"
                 f, arr = matplotlib.pyplot.subplots(1, 1)
                 arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
                 try:
                     matplotlib.pyplot.show()
                 except:
                     pass
+                """
                 size.append((int(heightAddition), int(widthAddition)))
                 lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
-                heightAddition += 1
+                heightAddition += 2
                 widthAddition += 1
             if len(lstSizesOptions) == 0:
                 continue
@@ -183,9 +195,14 @@ def ReturnLights(cutImlst):
                 continue
             max_match = np.amax(predictions)
             index = np.where(predictions == max_match)
-            max_fit_size = size[index[0][-1]]
-            fit_options.append((cutImlst[i][0][cY - max_fit_size[Y]:
-            cY + max_fit_size[Y], cX - max_fit_size[X]: cX + max_fit_size[X]]))
+            max_fit_size = size[index[0][0]]
+            fit_options.append((cutImlst[i][0][cY - max_fit_size[Y]: cY + max_fit_size[Y], cX - max_fit_size[X]: cX + max_fit_size[X]]))
+            f, arr = matplotlib.pyplot.subplots(1,1)
+            arr.imshow(fit_options[-1], cmap='gray')  # , interpolation='nearest')
+            try:
+                matplotlib.pyplot.show()
+            except:
+                pass
             fit_value.append(max_match)
             print(size)
             print(predictions)
