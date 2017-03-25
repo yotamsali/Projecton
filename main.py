@@ -5,13 +5,9 @@ from colorGetter import*
 from streamer import*
 from Tracking import*
 from chooseLight import*
-from moviepy.editor import *
-import pygame
-import visvis as vv
 import imageio
 from pynput.keyboard import Key, Listener
 import threading
-import os
 import matplotlib.pyplot
 import cv2
 
