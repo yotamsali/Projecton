@@ -14,9 +14,9 @@ RED = "Red"
 OFF = "Off"
 ERROR = -1
 
-RED_LOW = [0,50,170]
+RED_LOW = [0,40,170]
 RED_UP = [30,255,255]
-GREEN_LOW = [85,90,90]
+GREEN_LOW = [85,90,170]
 GREEN_UP = [95,255,255]
 
 #receives an image of a traffic light and returns the cropped image of only the black part
@@ -121,9 +121,9 @@ def getColor(img):
     else:
         return ERROR
 
-image = cv2.cvtColor(cv2.imread("./my/frame237.jpg"), cv2.COLOR_BGR2RGB)
+image = cv2.cvtColor(cv2.imread("./my/frame192.jpg"), cv2.COLOR_BGR2RGB)
 f, arr = matplotlib.pyplot.subplots(1, 1)
 arr.imshow(image, cmap='gray', interpolation='nearest')
 matplotlib.pyplot.show()
-print(getColor(image[298:336, 921:937]))
+print(getColor(image[338:367, 805:819]))
 #print(getColor(image[227:324, 475:522]))

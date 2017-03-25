@@ -12,13 +12,15 @@ import imageio
 from pynput.keyboard import Key, Listener
 import threading
 import os
+import matplotlib.pyplot
+import cv2
 
 
 RUN_TIME = 5
 FPS = 10
 
 
-path = 'examples/real.avi'
+path = 'examples/real2.avi'
 strm = Streamer(path, FPS)
 im = strm.getImage()
 leftIm = imageio.imread('examples/left.jpg')
@@ -104,17 +106,29 @@ def trackMain (fullIm, tl_im, indX, indY):
     fullim_dim = fullIm.shape[:2]
 
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
+        carCntrl.moveCar(0)
         #TODO call CNN on ROI
         #TODO Here to implement green blinking
-        print('got here')
         color = getColor(tl_im)
-        print('tracking')
+
         dist = tlDistCalc(tl_im.shape[0], tl_im.shape[1])
         DecisionMaker(color, dist)
 
         oldXY = newXY
         fullIm = strm.getImage()
         tl_im, newXY = Track(fullIm, tl_im, newXY)
+        tup2 = (newXY[1] + 3*tl_im.shape[1], newXY[0] + 3*tl_im.shape[0])
+        tup1 = (newXY[1] - 3*tl_im.shape[1], newXY[0] - 3*tl_im.shape[0])
+
+        cv2.rectangle(fullIm, tup1, tup2, (255, 0, 0))
+        matplotlib.pyplot.imshow(fullIm)
+        matplotlib.pyplot.show()
+
+        print('tracking')
+        print(color)
+        print(newXY)
+    carCntrl.moveCar(2)
+
 
 
 
@@ -141,7 +155,8 @@ def main():
         listOfOurTl = []
         direc = carCntrl.direction
         print(np.array(listTl).shape)
-        selectedTlTuple = ReturnDirections(listTl, carCntrl.direction)
+        selectedshowTh = threading.Thread(target=threadShowWhile)
+        TlTuple = ReturnDirections(listTl, carCntrl.direction)
         """""
         for cam in listTl:
             print(np.array(cam).shape)
@@ -149,15 +164,13 @@ def main():
                 listOfOurTl += [cam]
                 print(np.array(listOfOurTl).shape)
         """
-        if selectedTlTuple != None:
+        if TlTuple != None:
             print('found! started tracking')
-            trackMain(im, selectedTlTuple[0], selectedTlTuple[1], selectedTlTuple[2])
+            trackMain(im, TlTuple[0], TlTuple[1], TlTuple[2])
         else:
             carCntrl.drive(65)
 
-print('hey2')
+carCntrl.moveCar(2)
 showTh = threading.Thread(target=threadShowWhile)
-print('hey1')
 showTh.start()
-print('hey')
 main()
