@@ -4,6 +4,14 @@ import numpy as np
 from skimage import measure
 from skimage import morphology
 
+# IMPORTANT PARAMETERS*****************************************************
+RED_LOW = [190,30,30]
+RED_UP = [255,150,150]
+GREEN_LOW = [20,190,20]
+GREEN_UP = [100,255,100]
+#**************************************************************************
+
+
 
 def tic():
     #Homemade version of matlab tic and toc functions
@@ -102,10 +110,10 @@ def maskFilter(image):
     #matplotlib.pyplot.show()
 
     #print hsv[966][304]
-    lower_red1 = np.array([115,49,122])
-    upper_red1 = np.array([123,143,255])
-    lower_green = np.array([15,150,100])
-    upper_green = np.array([35,255,255])
+    lower_red1 = np.array(RED_LOW)
+    upper_red1 = np.array(RED_UP)
+    lower_green = np.array(GREEN_LOW)
+    upper_green = np.array(GREEN_UP)
 
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
     mask2 = cv2.inRange(hsv, lower_green, upper_green)
@@ -115,18 +123,31 @@ def maskFilter(image):
     res2 = cv2.bitwise_and(res, res, mask=mask1)
     #labels = morphology.label(res2, background=0)
 
-
-    #matplotlib.pyplot.imshow(image)
-    #matplotlib.pyplot.show()
-    #matplotlib.pyplot.imshow(org_hsv)
-    #matplotlib.pyplot.show()
-    #matplotlib.pyplot.imshow(res)
-    #matplotlib.pyplot.show()
-    #matplotlib.pyplot.imshow(res2)
-    #matplotlib.pyplot.show()
-    #matplotlib.pyplot.imshow(mask)
-    #matplotlib.pyplot.show()
-
+    try:
+        matplotlib.pyplot.imshow(image)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
+        matplotlib.pyplot.imshow(org_hsv)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
+        matplotlib.pyplot.imshow(res)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
+        matplotlib.pyplot.imshow(res2)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
+        matplotlib.pyplot.imshow(mask)
+        matplotlib.pyplot.show()
+    except:
+        pass
     x = measure.regionprops(res)
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)

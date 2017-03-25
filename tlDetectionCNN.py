@@ -90,9 +90,10 @@ def get_heat_map(images):
         print (heat_map.shape)
         print(toc())
         heat_maps.append(heat_map)
-        f, arr = matplotlib.pyplot.subplots(1, 1)
-        arr.imshow(heat_map, cmap='gray')#, interpolation='nearest')
-        matplotlib.pyplot.show()
+        if heat_map != []:
+            f, arr = matplotlib.pyplot.subplots(1, 1)
+            arr.imshow(heat_map, cmap='gray')#, interpolation='nearest')
+            matplotlib.pyplot.show()
 
 
 
