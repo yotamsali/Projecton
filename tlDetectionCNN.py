@@ -64,7 +64,12 @@ def get_heat_map(images):
                 rawRegion = image[y:y+HEIGHT, x:x+WIDTH]
                 region = [color for row in rawRegion for pix in row for color in pix]
                 regionList.append(region)
-        predictions = minicnn.predict(regionList)
+        #TODO - just fix the error in neural network
+        try:
+            predictions = minicnn.predict(regionList)
+        except:
+            raise Exception('Error in heatmap - fix it using keras !')
+
         '''
         weird_map = np.zeros((image.shape[Y]- HEIGHT,image.shape[X]-WIDTH))
         height, width = weird_map.shape
@@ -90,6 +95,8 @@ def GetMax(contours):
 
 
 def ReturnLights(cutImlst):
+    #TODO
+    return cutImlst
     heat_maps = get_heat_map(cutImlst)
     np.multiply(heat_maps, 255)
     returnlst = []

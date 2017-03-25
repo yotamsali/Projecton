@@ -29,6 +29,7 @@ LEFT_UP = 6
 HEIGHT = 20
 WIDTH = 12
 
+
 def tic():
     #Homemade version of matlab tic and toc functions
     import time
@@ -49,24 +50,41 @@ def getMiniCnn():
     model.load_weights('arrows')
     return model
 
-choosing_net = getMiniCnn()
-heat_maps = []
-
-def ReturnDirections(arrowsList):
+def ReturnDirections(arrowsList, direction):
     global choosing_net
     answers = []
-    for image in arrowsList:
-        image_answer = []
-        myImage = imresize(image, ARROW_SIZE)
-        type = choosing_net.predict([color for row in myImage for pix in row for color in pix])
+    #TODO
+    try:
+        return arrowsList[0]
+    except:
+        return None
+    for tuple in arrowsList:
+        #the string of chars of direction
+        strAns = ''
+        #resizing the tuple image size to standart size
+        img = tuple[0]
+        imgToNeural = imresize(img, ARROW_SIZE)
+        vectorToNeural = np.array([coulor for row in imgToNeural for pix in row for coulor in pix])
+        print(vectorToNeural.shape)
+        type = choosing_net.predict(vectorToNeural)
         if max(type) == UNDEFINED:
-            image_answer.append('U')
+            strAns += 'U'
         else:
             if max(type) == FORWARD or max(type) == RIGHT_UP or max(type) == LEFT_UP:
-                image_answer.append('F')
+                strAns += 'F'
             if max(type) == RIGHT or max(type) == RIGHT_UP or max(type) == RIGHT_LEFT:
-                image_answer.append('R')
+                strAns += 'R'
             if max(type) == LEFT or max(type) == LEFT_UP or max(type) == RIGHT_LEFT:
-                image_answer.append('L')
-        answers.append(image_answer)
-    return answers
+                strAns += 'L'
+        answers.append(strAns)
+
+    candidateList = arrowsList[not answers.__contains__('U') and answers.__contains__(direction)]
+    if len(candidateList) == 0:
+        return None
+    # return the maximal size image
+    finalTuple = max(candidateList, lambda elem: elem[0].shape[0] * elem[0].shape[1])
+    return finalTuple
+
+
+choosing_net = getMiniCnn()
+heat_maps = []

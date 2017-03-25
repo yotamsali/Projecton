@@ -118,12 +118,12 @@ def maskFilter(image):
 
     #matplotlib.pyplot.imshow(image)
     #matplotlib.pyplot.show()
-    matplotlib.pyplot.imshow(org_hsv)
-    matplotlib.pyplot.show()
+    #matplotlib.pyplot.imshow(org_hsv)
+    #matplotlib.pyplot.show()
     #matplotlib.pyplot.imshow(res)
     #matplotlib.pyplot.show()
-    matplotlib.pyplot.imshow(res2)
-    matplotlib.pyplot.show()
+    #matplotlib.pyplot.imshow(res2)
+    #matplotlib.pyplot.show()
     #matplotlib.pyplot.imshow(mask)
     #matplotlib.pyplot.show()
 

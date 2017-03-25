@@ -11,6 +11,7 @@ import visvis as vv
 import imageio
 from pynput.keyboard import Key, Listener
 import threading
+import os
 
 
 RUN_TIME = 5
@@ -34,12 +35,12 @@ def threadShowWhile():
     )
     listener.start()
     while True:
-        tic()
+        #tic()
         im = strm.getImage()
-        print(toc())
-        tic()
-        vv.imshow()
-        print(toc())
+        #print('time of read' + str(toc()))
+        #tic()
+        #cv2.imshow(np.array(im))
+        #print('time of show' + str(toc()))
     '''''
     pygame.display.set_caption(path)
     clip = VideoFileClip(path)
@@ -140,24 +141,23 @@ def main():
         listOfOurTl = []
         direc = carCntrl.direction
         print(np.array(listTl).shape)
+        selectedTlTuple = ReturnDirections(listTl, carCntrl.direction)
+        """""
         for cam in listTl:
             print(np.array(cam).shape)
             if (ReturnDirections(cam[0]) == direc):
                 listOfOurTl += [cam]
                 print(np.array(listOfOurTl).shape)
-        if len(listOfOurTl) > 1:
-            tlChosen = [max(listOfOurTl, key=lambda p: p[0].shape[0] * p[0].shape[1])]
-        elif len(listOfOurTl) == 1:
-            tlChosen = listOfOurTl[0]
-        else:
-            tlChosen = 0
-        if tlChosen != 0:
+        """
+        if selectedTlTuple != None:
             print('found! started tracking')
-            trackMain(im, tlChosen[0][0], tlChosen[0][1], tlChosen[0][2])
+            trackMain(im, selectedTlTuple[0], selectedTlTuple[1], selectedTlTuple[2])
         else:
             carCntrl.drive(65)
 
-
-showTh = threading.Thread(target=threadShowWhile())
+print('hey2')
+showTh = threading.Thread(target=threadShowWhile)
+print('hey1')
 showTh.start()
+print('hey')
 main()

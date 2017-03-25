@@ -84,8 +84,15 @@ def Track(im, template, xy):
 
     new_template_size = possible_templates_list[traffic_light[TEMPLATE_INDEX]].shape
     new_template_index = [traffic_light[PIXEL_INDEX][0]+up, traffic_light[PIXEL_INDEX][1]+left]
-    new_template = im[new_template_index[HEIGHT]:new_template_index[HEIGHT]+new_template_size[HEIGHT],
-                   new_template_index[WIDTH]:new_template_index[WIDTH]+new_template_size[WIDTH]]
+
+
+    startH = new_template_index[HEIGHT]
+    endH = new_template_index[HEIGHT] + new_template_size[HEIGHT]
+    startW = new_template_index[WIDTH]
+    endW = new_template_index[WIDTH] + new_template_size[WIDTH]
+
+    new_template = im[startH: endH, startW: endW]
+
     template = imresize(template, new_template_size)
     new_template = np.multiply(new_template,0.5)+np.multiply(np.reshape(template,new_template.shape),0.5)
     return new_template, new_template_index
