@@ -14,9 +14,9 @@ RED = "Red"
 OFF = "Off"
 ERROR = -1
 
-RED_LOW = [0,50,170]
+RED_LOW = [0,40,170]
 RED_UP = [30,255,255]
-GREEN_LOW = [85,90,90]
+GREEN_LOW = [85,90,170]
 GREEN_UP = [95,255,255]
 
 #receives an image of a traffic light and returns the cropped image of only the black part
