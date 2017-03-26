@@ -1,3 +1,4 @@
+from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense
 import cv2
@@ -6,18 +7,22 @@ from PIL import Image
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-from skimage import io, feature , color, exposure
+
 
 
 FACTOR = 1.2
 SMALLEST_TL = [8,4]
-MIDDLE_TL = [24,12]
+MEDIUM_TL = [24, 12]
 LARGE_TL = [44,22]
+XL_TL = [80,40]
+XXL_TL = [90,45]
 SMALL = 0
 MEDIUM = 1
 LARGE = 2
+XL = 3
+XXL = 4
 WRONG = -1
-SIZES = [SMALLEST_TL,MIDDLE_TL,LARGE_TL]
+SIZES = [SMALLEST_TL, MEDIUM_TL, LARGE_TL, XL_TL, XXL_TL]
 
 X = 1
 Y = 0
@@ -26,8 +31,8 @@ down = 1
 left = 0
 right = 1
 
-HEIGHT = 20
-WIDTH = 12
+HEIGHT = 120
+WIDTH = 70
 
 OPEN_RADIUS = 2
 MATCH_THRESHOLD = 0.7
@@ -44,7 +49,7 @@ def toc():
         return time.time() - startTime_for_tictoc
 '''
 builds the cnn from weights
-'''
+
 def getMiniCnn():
     model = Sequential()
     model.add(Dense(12, input_dim=720, init='uniform', activation='relu'))
@@ -54,9 +59,19 @@ def getMiniCnn():
 
 minicnn = getMiniCnn()
 
+'''
+
+
+
+def getCnn():
+    model = load_model("model")
+    return model
+minicnn = getCnn()
+
+
 
 '''
-returns the 
+returns the heat map of the list of the images
 '''
 def get_heat_map(images):
     heat_maps = []
@@ -70,11 +85,11 @@ def get_heat_map(images):
         #arr.imshow(image, cmap='gray')  # , interpolation='nearest')
         #matplotlib.pyplot.show()
 
+        # mat
         regionList, newSize = addImages(image)
         if len(regionList[-1]) <= 0 :
             heat_maps.append([])
             continue
-        #TODO - just fix the error in neural network
         try:
             predictions = minicnn.predict(regionList)
         except:
@@ -108,24 +123,29 @@ def addImages(image):
     newSize = -1
     # check im size and fit the candidates to it
     size = (image.shape[Y],image.shape[X])
-    if size[Y] - SMALLEST_TL[Y] < 1 or size[X] - SMALLEST_TL[X] < 1:
+    if size[Y] - SMALLEST_TL[Y]-1 < 1 or size[X] - SMALLEST_TL[X]-1 < 1:
         return [], newSize
-    elif size[Y] - MIDDLE_TL[Y] < 1 or size[X] - MIDDLE_TL[X] < 1:
+    elif size[Y] - MEDIUM_TL[Y] - 1 < 1 or size[X] - MEDIUM_TL[X] - 1 < 1:
         step = (SMALLEST_TL[Y], SMALLEST_TL[X])
         newSize = SMALL
-
-    elif size[Y] - LARGE_TL[Y] < 1 or size[X] - LARGE_TL[X] < 1:
-        step = (MIDDLE_TL[Y], MIDDLE_TL[X])
+    elif size[Y] - LARGE_TL[Y] - 1 < 1 or size[X] - LARGE_TL[X] - 1 < 1:
+        step = (MEDIUM_TL[Y], MEDIUM_TL[X])
         newSize = MEDIUM
-    else:
+    elif size[Y] - XL_TL[Y] - 1 < 1 or size[X] - XL_TL[X] - 1 < 1:
         step = (LARGE_TL[Y], LARGE_TL[X])
         newSize = LARGE
+    elif size[Y] - XXL_TL[Y] - 1 < 1 or size[X] - XXL_TL[X] - 1 < 1:
+        step = (XL_TL[Y], XL_TL[X])
+        newSize = XL
+    else:
+        step = (XXL_TL[Y], XXL_TL[X])
+        newSize = XXL
     tic()
+    # fit images to the nerual network
     for y in range(size[Y] - step[Y]):
         for x in range(size[X] - step[X]):
             rawRegion = imresize(image[y:y + step[Y], x:x + step[X]], (HEIGHT,WIDTH))
-            region = [color for row in rawRegion for pix in row for color in pix]
-            candidates.append(region)
+            candidates.append(rawRegion)
     print("time - "+str(toc()))
     return candidates, newSize
 # Gets the index of the biggest contour
@@ -175,9 +195,9 @@ def ReturnLights(cutImlst):
             lstSizesOptions = []
             size = []
             print ('c')
-            while widthAddition <= 40 and cY >= int(heightAddition) and cX >= int(widthAddition) \
+            while widthAddition <= 60 and cY >= int(heightAddition) and cX >= int(widthAddition) \
                         and cutImlst[i][0].shape[Y]-cY  >= int(heightAddition) and cutImlst[i][0].shape[X]-cX >= int(widthAddition) :
-                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition), cX-int(widthAddition):cX+int(widthAddition)],[20,12])
+                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition), cX-int(widthAddition):cX+int(widthAddition)],[HEIGHT,WIDTH])
                 """"
                 f, arr = matplotlib.pyplot.subplots(1, 1)
                 arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
@@ -187,7 +207,7 @@ def ReturnLights(cutImlst):
                     pass
                 """
                 size.append((int(heightAddition), int(widthAddition)))
-                lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
+                lstSizesOptions.append(candidate)
                 heightAddition += 2
                 widthAddition += 1
             if len(lstSizesOptions) == 0:
