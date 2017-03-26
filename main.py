@@ -102,7 +102,7 @@ def trackMain (fullIm, tl_im, indX, indY):
     fullim_dim = fullIm.shape[:2]
 
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
-        carCntrl.moveCar(0)
+        #carCntrl.moveCar(0)
         #TODO call CNN on ROI
         #TODO Here to implement green blinking
         color = getColor(tl_im)
@@ -123,7 +123,7 @@ def trackMain (fullIm, tl_im, indX, indY):
         print('tracking')
         print(color)
         print(newXY)
-    carCntrl.moveCar(2)
+    #carCntrl.moveCar(2)
 
 
 
@@ -166,7 +166,7 @@ def main():
         else:
             carCntrl.drive(65)
 
-carCntrl.moveCar(2)
+#carCntrl.moveCar(2)
 showTh = threading.Thread(target=threadShowWhile)
 showTh.start()
 main()
