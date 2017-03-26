@@ -1,5 +1,5 @@
 import cv2
-vidcap = cv2.VideoCapture('./my/ourCam25.3 23')
+vidcap = cv2.VideoCapture('./my/ourCam25.3 11')
 success,image = vidcap.read()
 count = 0
 success = True
