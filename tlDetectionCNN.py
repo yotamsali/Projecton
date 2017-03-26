@@ -1,3 +1,4 @@
+from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense
 import cv2
@@ -6,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-from skimage import io, feature , color, exposure
+
 
 
 FACTOR = 1.2
@@ -30,8 +31,8 @@ down = 1
 left = 0
 right = 1
 
-HEIGHT = 20
-WIDTH = 12
+HEIGHT = 120
+WIDTH = 70
 
 OPEN_RADIUS = 2
 MATCH_THRESHOLD = 0.7
@@ -48,7 +49,7 @@ def toc():
         return time.time() - startTime_for_tictoc
 '''
 builds the cnn from weights
-'''
+
 def getMiniCnn():
     model = Sequential()
     model.add(Dense(12, input_dim=720, init='uniform', activation='relu'))
@@ -57,6 +58,16 @@ def getMiniCnn():
     return model
 
 minicnn = getMiniCnn()
+
+'''
+
+
+
+def getCnn():
+    model = load_model("model")
+    return model
+minicnn = getCnn()
+
 
 
 '''
@@ -134,8 +145,7 @@ def addImages(image):
     for y in range(size[Y] - step[Y]):
         for x in range(size[X] - step[X]):
             rawRegion = imresize(image[y:y + step[Y], x:x + step[X]], (HEIGHT,WIDTH))
-            region = [color for row in rawRegion for pix in row for color in pix]
-            candidates.append(region)
+            candidates.append(rawRegion)
     print("time - "+str(toc()))
     return candidates, newSize
 # Gets the index of the biggest contour
@@ -185,9 +195,9 @@ def ReturnLights(cutImlst):
             lstSizesOptions = []
             size = []
             print ('c')
-            while widthAddition <= 40 and cY >= int(heightAddition) and cX >= int(widthAddition) \
+            while widthAddition <= 60 and cY >= int(heightAddition) and cX >= int(widthAddition) \
                         and cutImlst[i][0].shape[Y]-cY  >= int(heightAddition) and cutImlst[i][0].shape[X]-cX >= int(widthAddition) :
-                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition), cX-int(widthAddition):cX+int(widthAddition)],[20,12])
+                candidate = imresize(cutImlst[i][0][cY-int(heightAddition):cY+int(heightAddition), cX-int(widthAddition):cX+int(widthAddition)],[HEIGHT,WIDTH])
                 """"
                 f, arr = matplotlib.pyplot.subplots(1, 1)
                 arr.imshow(candidate, cmap='gray')#, interpolation='nearest')
@@ -197,7 +207,7 @@ def ReturnLights(cutImlst):
                     pass
                 """
                 size.append((int(heightAddition), int(widthAddition)))
-                lstSizesOptions.append([color for row in candidate for pix in row for color in pix])
+                lstSizesOptions.append(candidate)
                 heightAddition += 2
                 widthAddition += 1
             if len(lstSizesOptions) == 0:
