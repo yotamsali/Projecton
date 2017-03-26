@@ -4,7 +4,7 @@ import numpy
 import matplotlib.pyplot
 
 HEIGHT_WIDTH_RATIO = 2.2
-THRESHOLD = 10
+THRESHOLD = 20
 
 #states of the traffic light
 GREEN = "Green"
@@ -14,10 +14,17 @@ RED = "Red"
 OFF = "Off"
 ERROR = -1
 
-RED_LOW = [0,40,170]
-RED_UP = [30,255,255]
-GREEN_LOW = [85,90,170]
-GREEN_UP = [95,255,255]
+RED_LOW = [0,40,100]
+RED_UP = [20,255,255]
+
+ORANGE_LOW = [10,40,100]
+ORANGE_UP = [30,255,255]
+
+GREEN_LOW = [85,90,100]
+GREEN_UP = [105,255,255]
+
+BRIGHT_LOW = [160, 40, 100]
+BRIGHT_UP = [180, 255, 255]
 
 #receives an image of a traffic light and returns the cropped image of only the black part
 #(without blue circle above)
@@ -35,7 +42,7 @@ def getBlackBox(im):
 #top, middle, and bottom of the traffic light
 
 def getTopMiddleBottom(im):
-    height, width, temp = im.shape
+    height, width = im.shape
     cut_1 = height // 3
     cut_2 = 2 * height // 3
     top = im[0: cut_1, 0: width]
@@ -47,7 +54,7 @@ def getTopMiddleBottom(im):
 #calculates average brightness of image
 
 def brightness(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    gray = im
     average_color_per_row = numpy.average(gray, axis=0)
     average_color = numpy.average(average_color_per_row, axis=0)
     print(average_color)
@@ -68,28 +75,53 @@ def getColor(img):
     MIDDLE = 1
     BOTTOM = 2
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    ''''
     f, arr = matplotlib.pyplot.subplots(1, 1)
     arr.imshow(img, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
+    cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/image.jpg", cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
 
     f, arr = matplotlib.pyplot.subplots(1, 1)
     arr.imshow(hsv, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
-
+    '''
     lower_red1 = numpy.array(RED_LOW)
     upper_red1 = numpy.array(RED_UP)
+    lower_orange1 = numpy.array(ORANGE_LOW)
+    upper_orange1 = numpy.array(ORANGE_UP)
     lower_green = numpy.array(GREEN_LOW)
     upper_green = numpy.array(GREEN_UP)
 
+    mask_bright = cv2.inRange(hsv, numpy.array(BRIGHT_LOW), numpy.array(BRIGHT_UP))
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    mask2 = cv2.inRange(hsv, lower_green, upper_green)
-    mask = cv2.bitwise_or(mask1, mask2)
-    img = cv2.bitwise_and(img, img, mask=mask)
+    ''''
+    f, arr = matplotlib.pyplot.subplots(1, 1)
+    arr.imshow(mask_bright, cmap='gray', interpolation='nearest')
+    matplotlib.pyplot.show()
+    f, arr = matplotlib.pyplot.subplots(1, 1)
+    arr.imshow(mask1, cmap='gray', interpolation='nearest')
+    matplotlib.pyplot.show()
+    '''
+    mask_red = cv2.bitwise_or(mask1, mask_bright)
+    '''
+    f, arr = matplotlib.pyplot.subplots(1, 1)
+    arr.imshow(mask_red, cmap='gray', interpolation='nearest')
+    matplotlib.pyplot.show()
+    '''
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+    #mask_green = cv2.bitwise_or(mask2, mask_bright)
+    mask3 = cv2.inRange(hsv, lower_orange1, upper_orange1)
+    mask_orange = cv2.bitwise_or(mask3, mask_bright)
+    '''
     f, arr = matplotlib.pyplot.subplots(1, 1)
     arr.imshow(img, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
+    '''
     # black = getBlackBox(img) todo: fix this function
-    top, middle, bottom = getTopMiddleBottom(img)
+    #top, middle, bottom = getTopMiddleBottom(img)
+    top , temp1, temp2 = getTopMiddleBottom(mask_red)
+    temp1, middle, temp2 = getTopMiddleBottom(mask_orange)
+    temp1, temp2, bottom = getTopMiddleBottom(mask_green)
     #get brightness
     brght_arr = [brightness(top), brightness(middle), brightness(bottom)]
     brght_arr = brght_arr - min(brght_arr)
@@ -99,14 +131,18 @@ def getColor(img):
     light_arr = [light_on(x) for x in brght_arr]
 
     f, arr = matplotlib.pyplot.subplots(1, 1)
+    arr.imshow(top, cmap='gray', interpolation='nearest')
+    matplotlib.pyplot.show()
+    # cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/top.jpg", top)
+    f, arr = matplotlib.pyplot.subplots(1, 1)
     arr.imshow(middle, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
+    #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/middle.jpg", middle)
     f, arr = matplotlib.pyplot.subplots(1, 1)
     arr.imshow(bottom, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(top, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
+    #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/bottom.jpg", bottom)
+
 
     if (light_arr[BOTTOM] & (not light_arr[MIDDLE]) & (not light_arr[TOP])):
         return GREEN
@@ -120,10 +156,11 @@ def getColor(img):
         return OFF
     else:
         return ERROR
-
-image = cv2.cvtColor(cv2.imread("./my/frame192.jpg"), cv2.COLOR_BGR2RGB)
+'''''
+image = cv2.cvtColor(cv2.imread("./my/frame2535.jpg"), cv2.COLOR_BGR2RGB)
 f, arr = matplotlib.pyplot.subplots(1, 1)
 arr.imshow(image, cmap='gray', interpolation='nearest')
 matplotlib.pyplot.show()
-print(getColor(image[338:367, 805:819]))
+print(getColor(image[296:364, 640:672]))
 #print(getColor(image[227:324, 475:522]))
+'''
