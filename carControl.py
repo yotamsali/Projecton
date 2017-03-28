@@ -1,3 +1,6 @@
+"""
+module that controls the car
+"""
 import serial , time
 import serial.tools
 import serial.tools.list_ports
