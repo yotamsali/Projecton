@@ -1,3 +1,7 @@
+"""
+detects the color of the traffic light
+"""
+
 import cv2
 from PIL import Image, ImageStat
 import numpy
