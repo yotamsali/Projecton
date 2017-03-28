@@ -1,4 +1,6 @@
-
+"""
+returns the picture of the traffic light with the sign above
+"""
 ADD2TOP_RATIO = 0.4
 CROP_FROM_BOTTOM_RATIO = 0.5
 
