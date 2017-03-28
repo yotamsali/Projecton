@@ -1,3 +1,6 @@
+"""
+code for streaming images
+"""
 import time
 
 import imageio
@@ -24,14 +27,3 @@ class Streamer:
             return self.vid.get_data(self.prev)
         except:
             return 0
-
-
-
-
-
-
-
-
-
-
-
