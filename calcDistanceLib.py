@@ -1,17 +1,18 @@
 import math 
 import cv2
 import numpy as np
+import matplotlib.pyplot
 import sys
-from matplotlib import pyplot as plt
+
 
 #Parameters: TODO change these parameters
 HEIGHT = 1.5 # of camera from ground, in meters
 RAD2PIX = 0.0034 # ratio between radians and pixels
 DIST_BOTTOM = 2.3 # distance of camera from bottom of picture in reality, in meters
 THRESHOLD_DIST = 10 #(meters) distance in which the calculation switches to finding stopline
-
-
-#receives dimensions of traffic light
+NO_SKY = 536 #the height from the top of picture to ground
+NO_CAR = 250 #the height from bottom of picture, that will delete the car
+#receives dimensions of traffiimport Tkinterc light
 #returns distance and error
 def tlDistCalc(rowSize, colSize):
 
@@ -34,11 +35,13 @@ def tlDistCalc(rowSize, colSize):
 #dim - tuple of (width, height) of image
 #returns the cropped image
 
-def crop(img,dim):
+def crop(img):
     # cropping
-    (width, height) = dim
+    (height, width) = img.shape[0:2]
+    print(width, height)
     mask = np.zeros(img.shape, dtype=np.uint8)
-    roi_corners = np.array([[(width, height), (0, height), (width/2, height/4)]], dtype=np.int32)
+    #roi_corners = np.array([[(width, height), (0, height), (width/2, height/4)]], dtype=np.int32)
+    roi_corners = np.array([[(0,NO_SKY) , (0, height), (width, height), (width , NO_SKY)]], dtype=np.int32)
     channel_count = img.shape[2]
     ignore_mask_color = (255,) * channel_count
     cv2.fillPoly(mask, roi_corners, ignore_mask_color)
@@ -64,8 +67,9 @@ def hough(img, show_img):
 
             if ((theta <= 0.3 * 2 * 3.14) & (theta >= 0.2 * 2 * 3.14)):
                 #block comment prints picture and draws lines
-                """cv2.imshow('r', show_img)
-                cv2.waitKey(0)
+                f, arr = matplotlib.pyplot.subplots(1, 1)
+                arr.imshow(show_img, cmap='gray')  # , interpolation='nearest')
+                matplotlib.pyplot.show()
                 a = np.cos(theta)
                 b = np.sin(theta)
                 x0 = a * rho
@@ -75,7 +79,7 @@ def hough(img, show_img):
                 x2 = int(x0 - 1000 * (-b))
                 y2 = int(y0 - 1000 * (a))
 
-                cv2.line(show_img, (x1, y1), (x2, y2), (0, 0, 255), 2)"""
+                cv2.line(show_img, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 good_lines.append((rho,theta))
     return good_lines
 
@@ -91,9 +95,9 @@ def getLineHeight(dim, rho, theta):
 #receives complete camera image
 #returns height of stopline in pixels
 def findStopLineHeight(image):
-    dim = image.shape[0:1] #TODO check if this returns correct dimention
-    gray = cv2.cvtColor(crop(image,dim), cv2.COLOR_BGR2GRAY)
-    bound = [(156, 255)]
+    dim = image.shape[0:2] #TODO check if this returns correct dimention
+    gray = cv2.cvtColor(crop(image), cv2.COLOR_BGR2GRAY)
+    bound = [(190, 255)]
     for (lower, upper) in bound:
         mask = cv2.inRange(gray, lower, upper)
         masked = cv2.bitwise_and(gray, gray, mask=mask)
@@ -103,8 +107,12 @@ def findStopLineHeight(image):
     kernel = np.ones((5, 20), np.uint8)
     erosion = cv2.erode(blurred, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
+    matplotlib.pyplot.imshow(dilation)
+    matplotlib.pyplot.show()
+
 
     lines = hough(dilation,image)
+    print (lines)
     rho, theta = lines[0]
     return getLineHeight(dim, rho, theta)
 
@@ -134,3 +142,12 @@ def getDistance(tl_im, x, y, full_im):
     if (distance <= THRESHOLD_DIST):
         distance = lineDistCalc(full_im)
     return distance
+
+"""""
+im = cv2.imread('video/frame108.jpg')
+im = im[0:len(im)-NO_CAR, 0:len(im[0])]
+print(im)
+matplotlib.pyplot.imshow(im)
+matplotlib.pyplot.show()
+lineDistCalc(im)
+"""""

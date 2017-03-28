@@ -111,6 +111,7 @@ def tic():
     global startTime_for_tictoc
     startTime_for_tictoc = time.time()
 
+
 def toc():
     import time
     if 'startTime_for_tictoc' in globals():
