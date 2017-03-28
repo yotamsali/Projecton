@@ -1,3 +1,7 @@
+"""
+useful code for getting images from a video
+"""
+
 import cv2
 vidcap = cv2.VideoCapture('ourCam22.3 12')
 success,image = vidcap.read()
