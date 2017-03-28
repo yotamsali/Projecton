@@ -1,17 +1,6 @@
-from sklearn import datasets
-import tensorflow
-from carcnn import carcnn
-from keras.models import Sequential
-from keras.layers import Dense
 import numpy
-import cv2
-from scipy.misc import imresize
-from skimage import io, feature
-import matplotlib.pyplot
-import numpy as np
+from carcnn import carcnn
 from keras.models import save_model
-from sklearn.model_selection import train_test_split
-from keras.utils import np_utils
 
 SIZE = [120,70]
 

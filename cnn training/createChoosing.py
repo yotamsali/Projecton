@@ -1,22 +1,16 @@
-import tensorflow
-from carcnn import carcnn
-from keras.models import Sequential
-from keras.layers import Dense
 import numpy
-import cv2
-from scipy.misc import imresize
-from skimage import io, feature
-import matplotlib.pyplot
-import numpy as np
+from keras.layers import Dense
+from keras.models import Sequential
 from keras.models import save_model
 
-SIZE = [20,12]
+SIZE = [30,30]
 
 def ReturnXY():
     X = []
     Y = []
     j=0
-    for dir in range(1, 1):
+    '''
+    for dir in range(1, 13):
         T = '/home/yovelrom/Downloads/cutImages/clip' + str(dir) + '/0.jpg'
         F = '/home/yovelrom/Downloads/cutImages/neg' + str(dir) + '/neg0.jpg'
         rawImage = cv2.imread(T)
@@ -31,8 +25,8 @@ def ReturnXY():
             image = imresize(rawImage,SIZE)
             negIm = imresize(rawnegIm,SIZE)
 
-            X.append([color for row in image for pix in row for color in pix])
-            X.append([color for row in negIm for pix in row for color in pix])
+            X.append(image)
+            X.append(negIm)
             Y.append(1)
             Y.append(0)
             T = '/home/yovelrom/Downloads/cutImages/clip' + str(dir) + '/' + str(i) + '.jpg'
@@ -41,9 +35,10 @@ def ReturnXY():
             rawnegIm = cv2.imread(F)
             i += 1
             if(i == 2161):
-                print (len(X))
+                print len(X)
         print(dir)
-    print (len(X))
+    print len(X)
+    '''
     return X, Y
 
 
@@ -66,15 +61,16 @@ numpy.random.seed(seed)
 
 # create model
 model = Sequential()
-model.add(Dense(12, input_dim = 720, init='uniform', activation='relu'))
-model.add(Dense(1, init='uniform', activation='sigmoid'))
+model.add(Dense(20, input_dim=900, init='uniform', activation='relu'))
+model.add(Dense(7, init='uniform', activation='sigmoid'))
+#model = carcnn.build(120,70,3,1)
 
 # Compile model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 '''
 #Fit the model
-model.fit(X, Y, nb_epoch=1000, batch_size=30)
-'''
+model.fit(X, Y, nb_epoch=100, batch_size=20)
+
 f = '/home/yovelrom/Downloads/cutImages/clip13/0.jpg'
 image = cv2.imread(f)
 i = 0  # change the path to your computer
@@ -110,7 +106,7 @@ while not image == None:
 posPredictions = model.predict(posTest)
 rounded = [round(x[0]) for x in posPredictions]
 print ("The false positive err value is: " + str(sum(rounded)/i))
+'''
 
-
-save_model(model,'/home/yovelrom/PycharmProjects/Projecton/avivtut')
+save_model(model,'/home/yovelrom/PycharmProjects/Projecton/arrows')
 
