@@ -1,4 +1,7 @@
-import math 
+"""
+distance calculating module
+"""
+import math
 import cv2
 import numpy as np
 import matplotlib.pyplot
