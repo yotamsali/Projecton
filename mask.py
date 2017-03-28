@@ -1,3 +1,7 @@
+"""
+creates initial mask on camera image.
+returns possible traffic light candidates
+"""
 import cv2
 import matplotlib.pyplot
 import numpy as np
