@@ -1,3 +1,7 @@
+"""
+module for tracking the traffic light
+"""
+
 import math
 
 import matplotlib.pyplot
@@ -14,9 +18,9 @@ HEIGHT = 0
 WIDTH = 1
 
 DECREACE_UPPER_BOUND = 40
-INCREACE_LOWER_BOUND = 1.1
+INCREACE_LOWER_BOUND = 1.5
 
-OLD_TO_NEW_RATIO = 0.7
+OLD_TO_NEW_RATIO = 0.5
 
 def my_imresize(im, size):
     im = imresize(im, size)
@@ -64,8 +68,8 @@ def Track(im, template, xy):
     size = template.shape
     up = max(xy[HEIGHT] - int(size[HEIGHT] * size[HEIGHT] / DECREACE_UPPER_BOUND), 0)
     down = min(xy[HEIGHT] + int(size[HEIGHT]*INCREACE_LOWER_BOUND), im.shape[HEIGHT]-1)
-    left = max(int(xy[WIDTH] - 2*size[WIDTH]), 0)# - math.ceil(math.pow(2,size[1]*(im.shape[1]/2 - xy[1])/1920)))
-    right = min(int( xy[WIDTH] + 2*size[WIDTH]), im.shape[WIDTH]-1) # + math.ceil(math.pow(2,size[1]*(-im.shape[1]/2 + xy[1])/700)))
+    left = max(int(xy[WIDTH] - 2*size[WIDTH]) - math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150), 0)
+    right = min(int( xy[WIDTH] + 2*size[WIDTH]) + math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150), im.shape[WIDTH]-1)
     imNew = im[up:down, left:right]
 
     # get new templates
@@ -87,8 +91,8 @@ def Track(im, template, xy):
 
     # get the properties of the new template - first - size, second - location on the screen
     new_template_size = possible_templates_list[traffic_light[TEMPLATE_INDEX]].shape
-    new_template_index = [traffic_light[PIXEL_INDEX][HEIGHT]
-                          +up, traffic_light[PIXEL_INDEX][WIDTH]+left]
+    new_template_index = (traffic_light[PIXEL_INDEX][HEIGHT]
+                          +up, traffic_light[PIXEL_INDEX][WIDTH]+left)
 
 
     startH = new_template_index[HEIGHT]
@@ -99,10 +103,9 @@ def Track(im, template, xy):
     new_template = im[startH: endH, startW: endW]
 
     # not relevant - merge old with new
-    # template = imresize(template, new_template_size)
-    # new_template = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
-    #              np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
-
+    template = imresize(template, new_template_size)
+    new_template = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
+                  np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
     return new_template, new_template_index
 
 def tic():
@@ -128,36 +131,3 @@ def string(i):
     new += str(i)
     return new
 
-"""""
-camera = io.imread('/home/yovelrom/Downloads/dayTrain/dayClip3/frames/dayClip3--00000.png')
-#camera = color.rgb2hsv(camera)
-
-template = camera[361:376,625:632]
-location = (361, 625)
-f, arr = matplotlib.pyplot.subplots(1, 1)
-arr.imshow(template, cmap='gray')#, interpolation='nearest')
-matplotlib.pyplot.show()
-
-runtime = []
-for i in range(1,80,1):
-    tic()
-    number_string = string(i)
-    camera = cv2.imread('/home/yovelrom/Downloads/dayTrain/dayClip3/frames/dayClip3--' + number_string + '.png')
-    #camera = color.rgb2hsv(camera)
-    template, location = Track(camera,template, location)
-    size = template.shape
-    pts = (int(location[1]), int(location[0])), (int(location[1])+size[1], int(location[0])+size[0])
-    img2 = camera
-    cv2.rectangle(img2, pts[0], pts[1], (0,255,0))
-    #f, arr = matplotlib.pyplot.subplots(1, 1)
-    #arr.imshow(template, cmap='gray')#, interpolation='nearest')
-    #matplotlib.pyplot.show()
-    cv2.imshow('img2', img2)
-    #cv2.imwrite("/home/yovelrom/Downloads/gif/" + number_string + ".jpg", camera)
-    k = cv2.waitKey(60) & 0xff
-    runtime.append(toc())
-matplotlib.pyplot.plot(runtime)
-matplotlib.pyplot.ylabel('running-time (sec)')
-matplotlib.pyplot.xlabel('frame')
-matplotlib.pyplot.show()
-"""""
