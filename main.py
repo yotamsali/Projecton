@@ -23,6 +23,9 @@ leftIm = imageio.imread('examples/left.jpg')
 forwardIm = imageio.imread('examples/forward.jpg')
 arrow = forwardIm
 carCntrl = carControl()
+
+
+
 arrowChar = 'F'
 import time
 
