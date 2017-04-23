@@ -11,7 +11,6 @@ import threading
 import matplotlib.pyplot
 import cv2
 
-
 RUN_TIME = 5
 FPS = 10
 
@@ -23,8 +22,13 @@ leftIm = imageio.imread('examples/left.jpg')
 forwardIm = imageio.imread('examples/forward.jpg')
 arrow = forwardIm
 carCntrl = carControl()
-
-
+pt1 = [None, None]
+pt2= [None, None]
+RECT_ORANGE = (0, 165, 255) # in BGR
+RECT_GREEN = (0,255,0) # in BGR
+RECT_RED = (0,0,255) # in BGR
+THICKNESS_RECT = 6
+colorToRect = RECT_GREEN
 
 arrowChar = 'F'
 import time
@@ -36,18 +40,17 @@ def threadShowWhile():
     )
     listener.start()
     while True:
-        #tic()
-        im = strm.getImage()
-        #print('time of read' + str(toc()))
-        #tic()
-        #cv2.imshow(np.array(im))
-        #print('time of show' + str(toc()))
-    '''''
-    pygame.display.set_caption(path)
-    clip = VideoFileClip(path)
-    clip.preview()
-    pygame.quit()
-    '''''
+
+        cap = cv2.VideoCapture(path)
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+            cv2.rectangle(frame, pt1, pt2, colorToRect, THICKNESS_RECT)
+            cv2.imshow('frame', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
 
 
 def on_press(key):
@@ -103,7 +106,7 @@ def trackMain (fullIm, tl_im, indX, indY):
     oldXY = (indX, indY)
     newXY = oldXY
     fullim_dim = fullIm.shape[:2]
-
+    template = tl_im
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #carCntrl.moveCar(0)
         #TODO call CNN on ROI
@@ -115,7 +118,7 @@ def trackMain (fullIm, tl_im, indX, indY):
 
         oldXY = newXY
         fullIm = strm.getImage()
-        tl_im, newXY = Track(fullIm, tl_im, newXY)
+        tl_im, newXY, template = Track(fullIm, template, newXY)
         tup2 = (newXY[1] + 3*tl_im.shape[1], newXY[0] + 3*tl_im.shape[0])
         tup1 = (newXY[1] - 3*tl_im.shape[1], newXY[0] - 3*tl_im.shape[0])
 
