@@ -68,7 +68,7 @@ def getTrafficLights(mask, im):
     X_PAD_RATIO = 6
     Y_PAD_RATIO = 16
 
-    #find connectivity components (רכיבי קשירות)
+    #find connectivity components
     _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     dim = mask.shape[:2]
     tls = [] #traffic lights
