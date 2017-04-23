@@ -103,7 +103,7 @@ def trackMain (fullIm, tl_im, indX, indY):
     oldXY = (indX, indY)
     newXY = oldXY
     fullim_dim = fullIm.shape[:2]
-    first_time = True
+    template = tl_im
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #carCntrl.moveCar(0)
         #TODO call CNN on ROI
@@ -135,7 +135,7 @@ def DecisionMaker(color, distance):
     global carCntrl
     if color == 'Green':
         carCntrl.drive(50)
-    # Here to implement green blinking (ירוק מהבהב)
+    # Here to implement green blinking
     else:
         carCntrl.stop(distance)
 
