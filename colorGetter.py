@@ -6,6 +6,8 @@ import cv2
 from PIL import Image, ImageStat
 import numpy
 import matplotlib.pyplot
+from main import*
+
 
 HEIGHT_WIDTH_RATIO = 2.2
 THRESHOLD = 20
@@ -133,19 +135,19 @@ def getColor(img):
     #check if lights are on
     light_on = lambda x: x > THRESHOLD
     light_arr = [light_on(x) for x in brght_arr]
-
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(top, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
-    # cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/top.jpg", top)
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(middle, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
-    #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/middle.jpg", middle)
-    f, arr = matplotlib.pyplot.subplots(1, 1)
-    arr.imshow(bottom, cmap='gray', interpolation='nearest')
-    matplotlib.pyplot.show()
-    #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/bottom.jpg", bottom)
+    if DEBUG_MODE:
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(top, cmap='gray', interpolation='nearest')
+        matplotlib.pyplot.show()
+        #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/top.jpg", top)
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(middle, cmap='gray', interpolation='nearest')
+        matplotlib.pyplot.show()
+        #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/middle.jpg", middle)
+        f, arr = matplotlib.pyplot.subplots(1, 1)
+        arr.imshow(bottom, cmap='gray', interpolation='nearest')
+        matplotlib.pyplot.show()
+        #cv2.imwrite("/home/yovelrom/PycharmProjects/Projecton/color_examples/orange/3/bottom.jpg", bottom)
 
 
     if (light_arr[BOTTOM] & (not light_arr[MIDDLE]) & (not light_arr[TOP])):

@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot
 import sys
+from main import*
+
 
 
 #Parameters: TODO change these parameters
@@ -70,9 +72,10 @@ def hough(img, show_img):
 
             if ((theta <= 0.3 * 2 * 3.14) & (theta >= 0.2 * 2 * 3.14)):
                 #block comment prints picture and draws lines
-                f, arr = matplotlib.pyplot.subplots(1, 1)
-                arr.imshow(show_img, cmap='gray')  # , interpolation='nearest')
-                matplotlib.pyplot.show()
+                if DEBUG_MODE:
+                    f, arr = matplotlib.pyplot.subplots(1, 1)
+                    arr.imshow(show_img, cmap='gray')  # , interpolation='nearest')
+                    matplotlib.pyplot.show()
                 a = np.cos(theta)
                 b = np.sin(theta)
                 x0 = a * rho
@@ -82,7 +85,7 @@ def hough(img, show_img):
                 x2 = int(x0 - 1000 * (-b))
                 y2 = int(y0 - 1000 * (a))
 
-                cv2.line(show_img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                #cv2.line(show_img, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 good_lines.append((rho,theta))
     return good_lines
 
@@ -110,10 +113,9 @@ def findStopLineHeight(image):
     kernel = np.ones((5, 20), np.uint8)
     erosion = cv2.erode(blurred, kernel, iterations=1)
     dilation = cv2.dilate(erosion, kernel, iterations=1)
-    matplotlib.pyplot.imshow(dilation)
-    matplotlib.pyplot.show()
-
-
+    if DEBUG_MODE:
+        matplotlib.pyplot.imshow(dilation)
+        matplotlib.pyplot.show()
     lines = hough(dilation,image)
     print (lines)
     rho, theta = lines[0]

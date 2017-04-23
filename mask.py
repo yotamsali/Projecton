@@ -7,6 +7,7 @@ import matplotlib.pyplot
 import numpy as np
 from skimage import measure
 from skimage import morphology
+from main import*
 
 # IMPORTANT PARAMETERS*****************************************************
 RED_LOW = [100,200,160]
@@ -155,8 +156,9 @@ def maskFilter(image):
         pass
     """
     try:
-        matplotlib.pyplot.imshow(mask)
-        matplotlib.pyplot.show()
+        if DEBUG_MODE:
+            matplotlib.pyplot.imshow(mask)
+            matplotlib.pyplot.show()
     except:
         pass
 

@@ -11,9 +11,9 @@ import threading
 import matplotlib.pyplot
 import cv2
 
+DEBUG_MODE = False
 RUN_TIME = 5
 FPS = 10
-
 
 path = 'examples/real2.avi'
 strm = Streamer(path, FPS)
@@ -30,6 +30,9 @@ RECT_RED = (0,0,255) # in BGR
 THICKNESS_RECT = 6
 colorToRect = RECT_GREEN
 
+CAP = cv2.VideoCapture(path)
+FPS = int(CAP.get(cv2.cv.CV_CAP_PROP_FPS))
+
 arrowChar = 'F'
 import time
 
@@ -41,15 +44,15 @@ def threadShowWhile():
     listener.start()
     while True:
 
-        cap = cv2.VideoCapture(path)
-        while (cap.isOpened()):
-            ret, frame = cap.read()
-            cv2.rectangle(frame, pt1, pt2, colorToRect, THICKNESS_RECT)
+        while (CAP.isOpened()):
+            ret, frame = CAP.read()
+            if ((pt1 != None) and (pt2 != None)):
+                cv2.rectangle(frame, pt1, pt2, colorToRect, THICKNESS_RECT)
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        cap.release()
+        CAP.release()
         cv2.destroyAllWindows()
 
 
@@ -119,12 +122,12 @@ def trackMain (fullIm, tl_im, indX, indY):
         oldXY = newXY
         fullIm = strm.getImage()
         tl_im, newXY, template = Track(fullIm, template, newXY)
-        tup2 = (newXY[1] + 3*tl_im.shape[1], newXY[0] + 3*tl_im.shape[0])
-        tup1 = (newXY[1] - 3*tl_im.shape[1], newXY[0] - 3*tl_im.shape[0])
+        pt1 = (newXY[1] + 3*tl_im.shape[1], newXY[0] + 3*tl_im.shape[0])
+        pt2 = (newXY[1] - 3*tl_im.shape[1], newXY[0] - 3*tl_im.shape[0])
 
-        cv2.rectangle(fullIm, tup1, tup2, (255, 0, 0))
-        matplotlib.pyplot.imshow(fullIm)
-        matplotlib.pyplot.show()
+        if DEBUG_MODE:
+            matplotlib.pyplot.imshow(fullIm)
+            matplotlib.pyplot.show()
 
         print('tracking')
         print(color)

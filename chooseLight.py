@@ -89,6 +89,5 @@ def ReturnDirections(arrowsList, direction):
     finalTuple = max(candidateList, lambda elem: elem[0].shape[0] * elem[0].shape[1])
     return finalTuple
 
-
 choosing_net = getMiniCnn()
 heat_maps = []
