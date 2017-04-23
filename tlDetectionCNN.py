@@ -7,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-
+from main import *
 
 
 FACTOR = 1.2
@@ -60,9 +60,6 @@ def getMiniCnn():
 minicnn = getMiniCnn()
 
 '''
-
-
-
 def getCnn():
     model = load_model("model")
     return model
@@ -175,10 +172,12 @@ def ReturnLights(cutImlst):
         #thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernelOPEN)
         img, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-        f, arr = matplotlib.pyplot.subplots(1, 1)
-        arr.imshow(thresh, cmap='gray')#, interpolation='nearest')
+        if DEBUG_MODE:
+            f, arr = matplotlib.pyplot.subplots(1, 1)
+            arr.imshow(thresh, cmap='gray')#, interpolation='nearest')
         try:
-           matplotlib.pyplot.show()
+            if DEBUG_MODE:
+                matplotlib.pyplot.show()
         except:
            pass
         if len(contours) == 0:
@@ -214,10 +213,12 @@ def ReturnLights(cutImlst):
                 continue
 
             predictions = minicnn.predict(lstSizesOptions)
-            f, arr = matplotlib.pyplot.subplots(1, 1)
-            arr.imshow(candidate, cmap='gray')  # , interpolation='nearest')
+            if DEBUG_MODE:
+                f, arr = matplotlib.pyplot.subplots(1, 1)
+                arr.imshow(candidate, cmap='gray')  # , interpolation='nearest')
             try:
-                matplotlib.pyplot.show()
+                if DEBUG_MODE:
+                    matplotlib.pyplot.show()
             except:
                 pass
 
@@ -233,12 +234,13 @@ def ReturnLights(cutImlst):
             index = np.where(predictions == max_match)
             max_fit_size = size[index[0][0]]
             fit_options.append((cutImlst[i][0][cY - max_fit_size[Y]: cY + max_fit_size[Y], cX - max_fit_size[X]: cX + max_fit_size[X]]))
-            f, arr = matplotlib.pyplot.subplots(1,1)
-            arr.imshow(fit_options[-1], cmap='gray')  # , interpolation='nearest')
-            try:
-                matplotlib.pyplot.show()
-            except:
-                pass
+            if DEBUG_MODE:
+                f, arr = matplotlib.pyplot.subplots(1,1)
+                arr.imshow(fit_options[-1], cmap='gray')  # , interpolation='nearest')
+                try:
+                    matplotlib.pyplot.show()
+                except:
+                    pass
             fit_value.append(max_match)
 
         if len(fit_options) == 0:
