@@ -103,7 +103,7 @@ def trackMain (fullIm, tl_im, indX, indY):
     oldXY = (indX, indY)
     newXY = oldXY
     fullim_dim = fullIm.shape[:2]
-
+    first_time = True
     while ((not lostTL(oldXY, newXY, tl_im.shape[:2],fullim_dim)) & (frame_counter < CNN_RATE)):
         #carCntrl.moveCar(0)
         #TODO call CNN on ROI
@@ -115,7 +115,7 @@ def trackMain (fullIm, tl_im, indX, indY):
 
         oldXY = newXY
         fullIm = strm.getImage()
-        tl_im, newXY = Track(fullIm, tl_im, newXY)
+        tl_im, newXY, template = Track(template, tl_im, newXY)
         tup2 = (newXY[1] + 3*tl_im.shape[1], newXY[0] + 3*tl_im.shape[0])
         tup1 = (newXY[1] - 3*tl_im.shape[1], newXY[0] - 3*tl_im.shape[0])
 
