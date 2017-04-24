@@ -9,8 +9,9 @@ import numpy as np
 from scipy.misc import imresize
 from skimage import feature
 import cv2
+from time import sleep
 
-TEMPS_SIZES = [1,1.1,1.2] #The image is half from its original size
+TEMPS_SIZES = [1,1.02,1.05] #The image is half from its original size
 MATCH_RATE = 0
 PIXEL_INDEX = 1
 TEMPLATE_INDEX = 2
@@ -20,7 +21,7 @@ WIDTH = 1
 DECREACE_UPPER_BOUND = 40
 INCREACE_LOWER_BOUND = 1.5
 
-OLD_TO_NEW_RATIO = 0.5
+OLD_TO_NEW_RATIO = 0.6
 
 def my_imresize(im, size):
     im = imresize(im, size)
@@ -60,19 +61,31 @@ def max_spot(arr):
 
     return best_match, best_match_index, best_template
 
-# gets image and a traffic light template (from a moment ago)
-# returns new relevant template and the location of the traffic light right now
-def Track(im, template, xy):
+# gets image, a traffic light template (from a moment ago), it's location and the difference between the last two
+#traffic lights.
+# returns new relevant template, the location of the traffic light right now, the relevant temaplate
+# (merged with old images) and the difference between the locations of the traffic light now and the previous image.
+def Track(im, template, xy, diff = 0):
 
     # bounds of the template to be found, min/max to keep the bound legal
+
     size = template.shape
-    up = max(xy[HEIGHT] - int(size[HEIGHT] * size[HEIGHT] / DECREACE_UPPER_BOUND), 0)
+    up = max(xy[HEIGHT] - int(0.5*size[HEIGHT])-1, 0)
     down = min(xy[HEIGHT] + int(size[HEIGHT]*INCREACE_LOWER_BOUND), im.shape[HEIGHT]-1)
-    left = max(int(xy[WIDTH] - 2*size[WIDTH]) - math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150), 0)
-    right = min(int( xy[WIDTH] + 2*size[WIDTH]) + math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150), im.shape[WIDTH]-1)
+    left = max(int(xy[WIDTH] - size[WIDTH]-1) , 0) #- math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+    right = min(int( xy[WIDTH] + 2*size[WIDTH])+1 , im.shape[WIDTH]-1) #math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+
+    if diff[WIDTH] < 0:
+        left = max(left + diff[WIDTH],0)
+    if diff[WIDTH] > 0:
+        right =  min(diff[WIDTH] + right,im.shape[WIDTH]-1)
+    if diff[HEIGHT] < 0:
+        up = max(int(1.5*diff[HEIGHT])+up, 0)
+    if diff[HEIGHT] > 0:
+        down = min( diff[HEIGHT] + down, im.shape[HEIGHT]-1)
+
     imNew = im[up:down, left:right]
 
-    # get new templates
     possible_templates_list = templates(template)
     filters = []
     i = 0;
@@ -81,11 +94,11 @@ def Track(im, template, xy):
     for t in possible_templates_list:
         filters.append(feature.match_template(imNew, t, pad_input=False))
         i+=1
-        """""
-        f, arr = matplotlib.pyplot.subplots(1, 1)
-        arr.imshow(feature.match_template(imNew, t, pad_input=False), cmap='gray', interpolation='nearest')
-        matplotlib.pyplot.show()
-        """
+
+        #f, arr = matplotlib.pyplot.subplots(1, 1)
+        #arr.imshow(feature.match_template(imNew, t, pad_input=False), cmap='gray', interpolation='nearest')
+        #matplotlib.pyplot.show()
+
     # find best match
     traffic_light = max_spot(filters)
 
@@ -102,11 +115,12 @@ def Track(im, template, xy):
 
     new_template = im[startH: endH, startW: endW]
 
-    # not relevant - merge old with new
+    # merge old with new
     template = imresize(template, new_template_size)
     template_merged_with_past = np.multiply(new_template,OLD_TO_NEW_RATIO)+\
                   np.multiply(np.reshape(template,new_template.shape),1-OLD_TO_NEW_RATIO)
-    return new_template, new_template_index, template_merged_with_past
+    return new_template, new_template_index, template_merged_with_past, (-xy[HEIGHT]+new_template_index[HEIGHT],
+                                                                         -xy[WIDTH]+new_template_index[WIDTH])
 
 def tic():
     #Homemade version of matlab tic and toc functions
@@ -130,4 +144,3 @@ def string(i):
         inte /= 10
     new += str(i)
     return new
-
