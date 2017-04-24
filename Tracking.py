@@ -62,7 +62,7 @@ def max_spot(arr):
     return best_match, best_match_index, best_template
 
 # gets image, a traffic light template (from a moment ago), it's location and the difference between the last two
-#traffic lights.
+# traffic lights.
 # returns new relevant template, the location of the traffic light right now, the relevant temaplate
 # (merged with old images) and the difference between the locations of the traffic light now and the previous image.
 def Track(im, template, xy, diff = 0):
