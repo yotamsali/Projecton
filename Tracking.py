@@ -78,11 +78,17 @@ def Track(im, template, xy, diff = 0):
     if diff[WIDTH] < 0:
         left = max(left + diff[WIDTH],0)
     if diff[WIDTH] > 0:
-        right =  min(diff[WIDTH] + right,im.shape[WIDTH]-1)
+        right = min(diff[WIDTH] + right, im.shape[WIDTH] - 1)
     if diff[HEIGHT] < 0:
-        up = max(int(1.5*diff[HEIGHT])+up, 0)
+        up = max(int(1.5 * diff[HEIGHT]) + up, 0)
     if diff[HEIGHT] > 0:
-        down = min( diff[HEIGHT] + down, im.shape[HEIGHT]-1)
+        down = min(diff[HEIGHT] + down, im.shape[HEIGHT] - 1)
+    # first track
+    if diff[HEIGHT] == 0 and diff[WIDTH] == 0:
+        left = max(left -5, 0)
+        right =  min(5 + right,im.shape[WIDTH]-1)
+        down = min( 5 + down, im.shape[HEIGHT]-1)
+        up = max(-7+up, 0)
 
     imNew = im[up:down, left:right]
 
