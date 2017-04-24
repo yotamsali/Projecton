@@ -19,7 +19,7 @@ HEIGHT = 0
 WIDTH = 1
 
 DECREACE_UPPER_BOUND = 40
-INCREACE_LOWER_BOUND = 1.5
+INCREACE_LOWER_BOUND = 1.05
 
 OLD_TO_NEW_RATIO = 0.6
 
@@ -70,10 +70,10 @@ def Track(im, template, xy, diff = 0):
     # bounds of the template to be found, min/max to keep the bound legal
 
     size = template.shape
-    up = max(xy[HEIGHT] - int(0.5*size[HEIGHT])-1, 0)
+    up = max(xy[HEIGHT] - int(0.2*size[HEIGHT])-1, 0)
     down = min(xy[HEIGHT] + int(size[HEIGHT]*INCREACE_LOWER_BOUND), im.shape[HEIGHT]-1)
-    left = max(int(xy[WIDTH] - size[WIDTH]-1) , 0) #- math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
-    right = min(int( xy[WIDTH] + 2*size[WIDTH])+1 , im.shape[WIDTH]-1) #math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+    left = max(int(xy[WIDTH] - 0.2*size[WIDTH]-1) , 0) #- math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+    right = min(int( xy[WIDTH] + 1.2*size[WIDTH])+1 , im.shape[WIDTH]-1) #math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
 
     if diff[WIDTH] < 0:
         left = max(left + diff[WIDTH],0)
@@ -89,6 +89,8 @@ def Track(im, template, xy, diff = 0):
         right =  min(5 + right,im.shape[WIDTH]-1)
         down = min( 5 + down, im.shape[HEIGHT]-1)
         up = max(-7+up, 0)
+
+    print(str(up - xy[HEIGHT])+", "+str(left - xy[WIDTH]))
 
     imNew = im[up:down, left:right]
 

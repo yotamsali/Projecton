@@ -25,6 +25,17 @@ def getFirstImage(path):
     cv2.waitKey()
     cv2.imwrite("trackingTestPic1.jpg", image)  # save frame as JPEG file
 
+def tic():
+    #Homemade version of matlab tic and toc functions
+    import time
+    global startTime_for_tictoc
+    startTime_for_tictoc = time.time()
+
+
+def toc():
+    import time
+    if 'startTime_for_tictoc' in globals():
+        return time.time() - startTime_for_tictoc
 
 """
 getFirstImage(path)
@@ -35,13 +46,13 @@ plt.show()
 """
 
 
-path = '/home/aviv/PycharmProjects/Projecton/tests/photos/videos/ourCam22_3_13'
+path = '/home/aviv/PycharmProjects/Projecton/tests/photos/examples/ourCam22_3_10'
 ster = streamer.Streamer(path, 10)
 im = ster.getNext()
 matplotlib.pyplot.imshow(im)
 matplotlib.pyplot.show()
 #location of the traffic light in the first frame
-up, down, left, right = 353,399, 1049,1064
+up, down, left, right = 455, 497, 1030,1044
 
 template = im[up:down, left:right]
 matplotlib.pyplot.imshow(template)
@@ -54,15 +65,17 @@ for i in range(900):
     print(i)
     cv2.rectangle(im, (left, up), (pt2[1], pt2[0]), (225, 0, 0))
     im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
-    cv2.imshow("grrr", im)
-    cv2.imwrite("frame%d.jpg"%i, im)
+    #cv2.imshow("grrr", im)
+    #cv2.imwrite("frame%d.jpg"%i, im)
     im = ster.getNext()
     im = ster.getNext()
     im = ster.getNext()
-
+    tic()
     Tl, (up,left),template, diff  = Tracking.Track(im, template, (up,left), diff)
-    matplotlib.pyplot.imshow(Tl)
-    matplotlib.pyplot.show()
-    matplotlib.pyplot.imshow(im)
-    matplotlib.pyplot.show()
+    print(toc())
+    print(diff)
+    #matplotlib.pyplot.imshow(Tl)
+    #matplotlib.pyplot.show()
+    #matplotlib.pyplot.imshow(im)
+    #matplotlib.pyplot.show()
 
