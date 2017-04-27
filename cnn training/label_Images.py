@@ -3,11 +3,13 @@ import argparse
 import cv2
 from scipy import misc as m
 import os
+import random
 
 # initialize the list of reference points and boolean indicating
 # whether cropping is being performed or not
 refPt = []
 cropping = False
+NUMBER_OF_IMAGES = 20 ;
 
 
 def getIndexes():
@@ -122,11 +124,31 @@ for pictureName in pictures:
         # if the 'c' key is pressed, break from the loop
         elif key == ord("g"):
             cooAr = getNewImageCoo(refPt)
-            roi = clone[cooAr[0][1]:cooAr[1][1], cooAr[0][0]:cooAr[1][0]]
-            goodpath = str(posCounter) + ".jpg"
-            m.imsave(os.path.join("pos", goodpath), roi[..., ::-1])
-            image = clone.copy()
-            posCounter = posCounter + 1
+            tl_height = abs(cooAr[0][0] - cooAr[1][0])
+            tl_width = abs(cooAr[0][1] - cooAr[1][1])
+            tl_up = cooAr[0][1]
+            tl_down = cooAr[1][1]
+            tl_right = cooAr[1][0]
+            tl_left = cooAr[0][0]
+            image_height , image_width , useless  = image.shape
+            for i in range(NUMBER_OF_IMAGES):
+                random_right = random.randint(0, tl_width / 2)
+                random_left = random.randint(0, tl_width / 2)
+                random_up = random.randint(0, tl_height / 2)
+                random_down = random.randint(0, tl_height / 2)
+                if (tl_right + random_right >= image_width):
+                    random_right = image_width - tl_right
+                if (tl_left - random_left <= 0):
+                    random_left = tl_left
+                if (tl_up - random_up <=0 ):
+                    random_up = tl_up
+                if (tl_down + random_down >= image_height):
+                    random_down = image_height - tl_down
+                roi = clone[tl_up-random_up:tl_down+random_down, tl_left-random_left:tl_right+random_right]
+                goodpath = "posIndex:"+str(i)+"-u_"+str(random_up)+"_d_"+str(random_down)+"_l_"+str(random_left)+"_r_"+str(random_right)+"_number:"+str(posCounter) + ".jpg"
+                m.imsave(os.path.join("pos", goodpath), roi[..., ::-1])
+                image = clone.copy()
+                posCounter = posCounter + 1
 
         elif key == ord("b"):
             cooAr = getNewImageCoo(refPt)
