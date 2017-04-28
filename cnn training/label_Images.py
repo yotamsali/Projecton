@@ -101,6 +101,8 @@ print ("How to use the program?\nwrite the path of the folder where the images a
 path = raw_input("Enter the path of the pictures folder\n")
 print("Searching images in folder: "+path)
 pictures = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+pictures.sort()
+to_break = False # a boolean to break the loop with 'q'
 for pictureName in pictures:
     # load the image, clone it, and setup the mouse callback function
     image = cv2.imread(path+"/"+pictureName)
@@ -162,6 +164,11 @@ for pictureName in pictures:
         elif key == ord("f"):
             break
 
+        elif key == ord("q"):
+            to_break = True
+            break
+    if to_break:
+        break
 
 
 
