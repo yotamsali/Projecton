@@ -180,7 +180,6 @@ for pictureName in pictures:
 
         elif key == ord("b"):
             cooAr = getNewImageCoo(refPt)
-            print(cooAr)
             roi = clone[cooAr[0][1]:cooAr[1][1], cooAr[0][0]:cooAr[1][0]]
             badpath = str(negCounter) + ".jpg"
             m.imsave(os.path.join("neg", badpath), roi[..., ::-1])
@@ -245,12 +244,10 @@ for pictureName in pictures:
                     save_twenty_random(cooArNew, image)
                     posCounter = posCounter + 1
                 counter += 1
-                print(cooArNew)
         # Track a bad example
         elif key == ord('w'):
             # these are just the lines from 'b', copied. saves the firest image
             cooAr = getNewImageCoo(refPt)
-            print(cooAr)
             roi = clone[cooAr[0][1]:cooAr[1][1], cooAr[0][0]:cooAr[1][0]]
             badpath = str(negCounter) + ".jpg"
             m.imsave(os.path.join("neg", badpath), roi[..., ::-1])
