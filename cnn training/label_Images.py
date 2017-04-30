@@ -210,6 +210,7 @@ for pictureName in pictures:
             while True:
                 #reads the next image in the list
                 image = cv2.imread(path+"/"+pictures[base + counter])
+                clone = image.copy()
                 #delegates to tracking
                 useless, xy, template, diff = Tracking.Track(image, template, xy, diff)
                 #clones so the rectangle will not be saved
@@ -233,17 +234,81 @@ for pictureName in pictures:
                             break
                     cooAr = getNewImageCoo(refPt)
                     save_twenty_random(cooAr, image)
+                    posCounter = posCounter + 1
                     template = image[cooAr[0][Y]:cooAr[1][Y], cooAr[0][X]:cooAr[1][X]]
-                    cooArNew = [(xy[X], xy[Y]), (xy[X] + template.shape[X], xy[X] + template.shape[Y])]
                     xy = (cooAr[0][Y], cooAr[0][X])
+                    cooArNew = cooAr
 
                 #just the usual tracking
                 else:
-                    cooArNew = [(xy[Y],xy[X]), (xy[Y] + template.shape[Y], xy[X] + template.shape[X])]
+                    cooArNew = [(xy[1],xy[0]), (xy[1] + template.shape[1], xy[0] + template.shape[0])]
                     save_twenty_random(cooArNew, image)
+                    posCounter = posCounter + 1
                 counter += 1
+                print(cooArNew)
+        # Track a bad example
+        elif key == ord('w'):
+            # these are just the lines from 'b', copied. saves the firest image
+            cooAr = getNewImageCoo(refPt)
+            print(cooAr)
+            roi = clone[cooAr[0][1]:cooAr[1][1], cooAr[0][0]:cooAr[1][0]]
+            badpath = str(negCounter) + ".jpg"
+            m.imsave(os.path.join("neg", badpath), roi[..., ::-1])
+            image = clone.copy()
+            negCounter = negCounter + 1
 
+            diff = [0, 0]
+            template = image[cooAr[0][Y]:cooAr[1][Y], cooAr[0][X]:cooAr[1][X]]
+            xy = (cooAr[0][Y], cooAr[0][X])
+            base = pictures.index(pictureName)
+            counter = 1
+            # saves the picture so it will be possible to return to it
+            oldImage = clone.copy()
+            while True:
+                # reads the next image in the list
+                image = cv2.imread(path + "/" + pictures[base + counter])
+                # delegates to tracking
+                useless, xy, template, diff = Tracking.Track(image, template, xy, diff)
+                # clones so the rectangle will not be saved
+                imClone = image[:].copy()
+                cv2.rectangle(imClone, (xy[1], xy[0]), (xy[1] + template.shape[1], xy[0] + template.shape[0]),
+                              (0, 255, 0), 2)
+                cv2.imshow("image", imClone)
+                key = cv2.waitKey(100) & 0xFF
+                # stops the process and returns to the first image, to choose new stoplight
+                if key == ord('s'):
+                    image = oldImage
+                    cv2.imshow("image", image)
+                    break
+                # pauses the process to let the user decide on new borders
+                elif key == ord('p'):
+                    cv2.imshow("image", image)
+                    cv2.setMouseCallback("image", click_and_crop)
+                    while True:
+                        key = cv2.waitKey(1) & 0xFF
+                        # press c after the new border is decided
+                        if key == ord('c'):
+                            break
+                    cooAr = getNewImageCoo(refPt)
 
+                    roi = clone[cooAr[0][1]:cooAr[1][1], cooAr[0][0]:cooAr[1][0]]
+                    badpath = str(negCounter) + ".jpg"
+                    m.imsave(os.path.join("neg", badpath), roi[..., ::-1])
+                    image = clone.copy()
+                    negCounter = negCounter + 1
+
+                    template = image[cooAr[0][Y]:cooAr[1][Y], cooAr[0][X]:cooAr[1][X]]
+                    cooArNew = [(xy[X], xy[Y]), (xy[X] + template.shape[X], xy[X] + template.shape[Y])]
+                    xy = (cooAr[0][Y], cooAr[0][X])
+                    # just the usual tracking
+                else:
+                    cooArNew = [(xy[Y], xy[X]), (xy[Y] + template.shape[Y], xy[X] + template.shape[X])]
+                    roi = clone[cooArNew[0][1]:cooArNew[1][1], cooArNew[0][0]:cooArNew[1][0]]
+                    badpath = str(negCounter) + ".jpg"
+                    m.imsave(os.path.join("neg", badpath), roi[..., ::-1])
+                    image = clone.copy()
+                    negCounter = negCounter + 1
+                counter += 1
 
 
     if to_break:

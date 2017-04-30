@@ -146,11 +146,10 @@ def getDistance(tl_im, x, y, full_im):
         distance = lineDistCalc(full_im)
     return distance
 
-"""""
-im = cv2.imread('video/frame108.jpg')
+
+im = cv2.imread('stop_line_frames/frame1253.jpg')
 im = im[0:len(im)-NO_CAR, 0:len(im[0])]
 print(im)
 matplotlib.pyplot.imshow(im)
 matplotlib.pyplot.show()
 lineDistCalc(im)
-"""""

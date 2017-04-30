@@ -8,8 +8,8 @@ import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
 from skimage import feature
-import cv2
-from time import sleep
+#import cv2
+#from time import sleep
 
 TEMPS_SIZES = [1,1.02,1.05] #The image is half from its original size
 MATCH_RATE = 0
@@ -70,10 +70,10 @@ def Track(im, template, xy, diff = 0):
     # bounds of the template to be found, min/max to keep the bound legal
 
     size = template.shape
-    up = max(xy[HEIGHT] - int(0.2*size[HEIGHT])-1, 0)
+    up = max(xy[HEIGHT] - int(0.5*size[HEIGHT])-1, 0)
     down = min(xy[HEIGHT] + int(size[HEIGHT]*INCREACE_LOWER_BOUND), im.shape[HEIGHT]-1)
-    left = max(int(xy[WIDTH] - 0.2*size[WIDTH]-1) , 0) #- math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
-    right = min(int( xy[WIDTH] + 1.2*size[WIDTH])+1 , im.shape[WIDTH]-1) #math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+    left = max(int(xy[WIDTH] - 0.5*size[WIDTH]-1) , 0) #- math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
+    right = min(int( xy[WIDTH] + 1.5*size[WIDTH])+1 , im.shape[WIDTH]-1) #math.ceil(size[1]*(-im.shape[1]/2 + xy[1])/150)
 
     if diff[WIDTH] < 0:
         left = max(left + diff[WIDTH],0)
@@ -90,7 +90,7 @@ def Track(im, template, xy, diff = 0):
         down = min( 5 + down, im.shape[HEIGHT]-1)
         up = max(-7+up, 0)
 
-    print(str(up - xy[HEIGHT])+", "+str(left - xy[WIDTH]))
+    #print(str(up - xy[HEIGHT])+", "+str(left - xy[WIDTH]))
 
     imNew = im[up:down, left:right]
 
