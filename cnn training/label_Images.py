@@ -110,8 +110,8 @@ def save_twenty_random(cooAr, image, ):
         if (tl_down + random_down >= image_height):
             random_down = image_height - tl_down
         roi = clone[tl_up - random_up:tl_down + random_down,tl_left - random_left:tl_right + random_right]
-        goodpath = "posIndex:" + str(i) + "-u_" + str(random_up) + "_d_" + str(random_down) + "_l_" + str(
-            random_left) + "_r_" + str(random_right) + "_number:" + str(posCounter) + ".jpg"
+        goodpath = "_number:" + str(posCounter) + "_posIndex:" + str(i) + "-u_" + str(random_up) + "_d_" + str(random_down) + "_l_" + str(
+            random_left) + "_r_" + str(random_right) + ".jpg"
         m.imsave(os.path.join("pos", goodpath), roi[..., ::-1])
 
 
@@ -125,6 +125,7 @@ print ("How to use the program?\nwrite the path of the folder where the images a
        "\nif the sample is a positive sample, press g in order to save it. if the sample is negative, "
        "press b in order to save it.\nwhen you finished with a picture, press f to move on.\n")
 path = raw_input("Enter the path of the pictures folder\n")
+#path = "/home/gil/PycharmProjects/Projecton/cnn training/25.3.1"
 print("Searching images in folder: "+path)
 pictures = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
 pictures.sort(key = lambda x: int(x[:-4]))
@@ -188,6 +189,7 @@ for pictureName in pictures:
 
 
         elif key == ord("f"):
+            cv2.destroyWindow("image")
             break
 
         elif key == ord("q"):
@@ -269,7 +271,7 @@ for pictureName in pictures:
                 # clones so the rectangle will not be saved
                 imClone = image[:].copy()
                 cv2.rectangle(imClone, (xy[1], xy[0]), (xy[1] + template.shape[1], xy[0] + template.shape[0]),
-                              (0, 255, 0), 2)
+                              (0, 0, 255), 2)
                 cv2.imshow("image", imClone)
                 key = cv2.waitKey(100) & 0xFF
                 # stops the process and returns to the first image, to choose new stoplight
