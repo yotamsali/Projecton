@@ -19,7 +19,7 @@ HEIGHT = 0
 WIDTH = 1
 
 DECREACE_UPPER_BOUND = 40
-INCREACE_LOWER_BOUND = 1.05
+INCREACE_LOWER_BOUND = 1.2
 
 OLD_TO_NEW_RATIO = 0.6
 
@@ -38,7 +38,10 @@ def templates(template):
     width = template.shape[WIDTH]
 
     for factor in TEMPS_SIZES:
-        template_size = np.array([(int)(height * factor) ,(int)(np.ceil(width * factor))])
+        widthNew = (int)(np.ceil(width * factor))
+        heightNew = (int)(np.ceil(widthNew-width)/width*height)+height
+        #template_size = np.array([(int)(np.ceil(height * factor)) ,(int)(np.ceil(width * factor))])
+        template_size = np.array([heightNew , widthNew])
         x = imresize(template,template_size)
         templates_list.append(x)
 
@@ -85,10 +88,10 @@ def Track(im, template, xy, diff = 0):
         down = min(diff[HEIGHT] + down, im.shape[HEIGHT] - 1)
     # first track
     if diff[HEIGHT] == 0 and diff[WIDTH] == 0:
-        left = max(left -5, 0)
-        right =  min(5 + right,im.shape[WIDTH]-1)
-        down = min( 5 + down, im.shape[HEIGHT]-1)
-        up = max(-7+up, 0)
+        left = max(left -50, 0)
+        right =  min(50 + right,im.shape[WIDTH]-1)
+        down = min( 50 + down, im.shape[HEIGHT]-1)
+        up = max(-50+up, 0)
 
     #print(str(up - xy[HEIGHT])+", "+str(left - xy[WIDTH]))
 
