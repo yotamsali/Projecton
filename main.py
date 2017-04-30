@@ -43,18 +43,16 @@ def threadShowWhile():
     )
     listener.start()
     while True:
-
         while (CAP.isOpened()):
             ret, frame = CAP.read()
             if ((pt1 != None) and (pt2 != None)):
                 cv2.rectangle(frame, pt1, pt2, colorToRect, THICKNESS_RECT)
+            im[:100, :100] = arrow
             cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-
         CAP.release()
         cv2.destroyAllWindows()
-
 
 def on_press(key):
     global arrow
@@ -155,13 +153,11 @@ def main():
         tic()
         im = strm.getImage()
         print(toc())
-        #TODO
-        #im[:100, :100] = arrow
         listTl = tlDetect(im)
         listOfOurTl = []
         direc = carCntrl.direction
         print(np.array(listTl).shape)
-        selectedshowTh = threading.Thread(target=threadShowWhile)
+        #selectedshowTh = threading.Thread(target=threadShowWhile)
         TlTuple = ReturnDirections(listTl, carCntrl.direction)
         """""
         for cam in listTl:

@@ -72,7 +72,7 @@ def brightness(im):
 
 
 
-# TODO make sure that img is cropped image of traffic light
+
 #returns the current state of the traffic light
 #returns -1 in case of error
 
@@ -123,7 +123,7 @@ def getColor(img):
     arr.imshow(img, cmap='gray', interpolation='nearest')
     matplotlib.pyplot.show()
     '''
-    # black = getBlackBox(img) todo: fix this function
+    # black = getBlackBox(img)
     #top, middle, bottom = getTopMiddleBottom(img)
     top , temp1, temp2 = getTopMiddleBottom(mask_red)
     temp1, middle, temp2 = getTopMiddleBottom(mask_orange)

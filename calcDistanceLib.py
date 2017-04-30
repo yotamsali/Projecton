@@ -8,8 +8,6 @@ import matplotlib.pyplot
 import sys
 from main import*
 
-
-
 #Parameters: TODO change these parameters
 HEIGHT = 1.5 # of camera from ground, in meters
 RAD2PIX = 0.0034 # ratio between radians and pixels
@@ -59,7 +57,7 @@ def crop(img):
 #img - the image to be processed
 #show_img - the image to be printed upon
 #currently draws the relevant lines on the picture and returns them
-#TODO !!!!needs to changed!!!!
+#TODO !!!!needs to be changed!!!!
 
 def hough(img, show_img):
     #running time can be improved if we replace this with a probabilistic hough algorithm
@@ -101,7 +99,7 @@ def getLineHeight(dim, rho, theta):
 #receives complete camera image
 #returns height of stopline in pixels
 def findStopLineHeight(image):
-    dim = image.shape[0:2] #TODO check if this returns correct dimention
+    dim = image.shape[0:2]
     gray = cv2.cvtColor(crop(image), cv2.COLOR_BGR2GRAY)
     bound = [(190, 255)]
     for (lower, upper) in bound:
