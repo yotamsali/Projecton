@@ -15,11 +15,12 @@ DEBUG_MODE = False
 RUN_TIME = 5
 FPS = 10
 
-path = 'testVideo'
+path = 'testVideo.avi'
 strm = Streamer(path, FPS)
 im = strm.getImage()
-leftIm = imageio.imread('examples/left.jpg')
-forwardIm = imageio.imread('examples/forward.jpg')
+
+leftIm = imageio.imread('left.jpg')
+forwardIm = imageio.imread('forward.jpg')
 arrow = forwardIm
 carCntrl = carControl()
 pt1 = [None, None]
@@ -31,7 +32,7 @@ THICKNESS_RECT = 6
 colorToRect = RECT_GREEN
 
 CAP = cv2.VideoCapture(path)
-FPS = int(CAP.get(cv2.cv.CV_CAP_PROP_FPS))
+FPS = 10
 
 arrowChar = 'F'
 import time
@@ -42,6 +43,7 @@ def threadShowWhile():
         on_press=on_press
     )
     listener.start()
+    print("got here")
     while True:
         while (CAP.isOpened()):
             ret, frame = CAP.read()
@@ -52,7 +54,6 @@ def threadShowWhile():
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         CAP.release()
-        cv2.destroyAllWindows()
 
 def on_press(key):
     global arrow
@@ -155,9 +156,7 @@ def main():
         print(toc())
         listTl = tlDetect(im)
         listOfOurTl = []
-        direc = carCntrl.direction
         print(np.array(listTl).shape)
-        #selectedshowTh = threading.Thread(target=threadShowWhile)
         TlTuple = ReturnDirections(listTl, carCntrl.direction)
         """""
         for cam in listTl:
@@ -175,4 +174,4 @@ def main():
 #carCntrl.moveCar(2)
 showTh = threading.Thread(target=threadShowWhile)
 showTh.start()
-main()
+#main()

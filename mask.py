@@ -7,7 +7,6 @@ import matplotlib.pyplot
 import numpy as np
 from skimage import measure
 from skimage import morphology
-from main import*
 
 # IMPORTANT PARAMETERS*****************************************************
 RED_LOW = [100,200,160]
@@ -19,7 +18,7 @@ OPEN_RADIUS = 2
 #**************************************************************************
 
 
-
+DEBUG_MODE = False;
 def tic():
     #Homemade version of matlab tic and toc functions
     import time

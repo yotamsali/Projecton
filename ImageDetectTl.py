@@ -3,10 +3,11 @@ returns all detected traffic lights
 """
 
 from mask import*
-import numpy as np
 from tlDetectionCNN import*
-import cv2
-def tlDetect (im):
+
+
+
+def tlDetect(im):
     if DEBUG_MODE:
         f, arr = matplotlib.pyplot.subplots(1, 1)
         try:
