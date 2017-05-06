@@ -15,7 +15,7 @@ DEBUG_MODE = False
 RUN_TIME = 5
 FPS = 10
 
-path = 'examples/real2.avi'
+path = 'testVideo'
 strm = Streamer(path, FPS)
 im = strm.getImage()
 leftIm = imageio.imread('examples/left.jpg')
