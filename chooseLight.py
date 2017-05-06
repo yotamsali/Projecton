@@ -51,7 +51,7 @@ def getMiniCnn():
     model = Sequential()
     model.add(Dense(20, input_dim=900, init='uniform', activation='relu'))
     model.add(Dense(7, init='uniform', activation='sigmoid'))
-    model.load_weights('arrows')
+    model.load_weights('cnn weights/arrows')
     return model
 
 def ReturnDirections(arrowsList, direction):
