@@ -46,14 +46,14 @@ plt.show()
 """
 
 
-path = '/home/aviv/PycharmProjects/Projecton/ourCam22_3_1'
+path = '/media/aviv/DC5C192D5C190444/ourCam25_3_24'
 ster = streamer.Streamer(path, 10)
-for i in range(270):
+for i in range(1280):
     im = ster.getNext()
 matplotlib.pyplot.imshow(im)
 matplotlib.pyplot.show()
 #location of the traffic light in the first frame
-up, down, left, right = 373, 410, 1412, 1425
+up, down, left, right = 280, 340, 581, 603
 
 template = im[up:down, left:right]
 matplotlib.pyplot.imshow(template)
@@ -69,7 +69,7 @@ for i in range(900):
     im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
     cv2.imshow("grrr", imClone)
     cv2.waitKey(100)
-    #cv2.imwrite("/home/aviv/PycharmProjects/Projecton/frames/%d.jpg"%i, im)
+    cv2.imwrite("/home/aviv/PycharmProjects/Projecton/frames/%d.jpg"%i, im)
     #im = ster.getNext()
     #im = ster.getNext()
     im = ster.getNext()
@@ -77,7 +77,7 @@ for i in range(900):
     im = ster.getNext()
     imClone = im[:].copy()
     tic()
-    Tl, (up,left),template, diff  = Tracking.Track(im, template, (up,left), diff)
+    #Tl, (up,left),template, diff  = Tracking.Track(im, template, (up,left), diff)
     print(toc())
     #print(diff)
     #matplotlib.pyplot.imshow(Tl)

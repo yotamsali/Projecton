@@ -3,7 +3,7 @@ useful code for getting images from a video
 """
 
 import cv2
-vidcap = cv2.VideoCapture('./stop_line_frames/ourCam25.3.9')
+vidcap = cv2.VideoCapture('./stop_line_frames/ourCam25.9')
 success,image = vidcap.read()
 count = 0
 success = True

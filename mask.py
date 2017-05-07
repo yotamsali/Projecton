@@ -7,15 +7,16 @@ import matplotlib.pyplot
 import numpy as np
 from skimage import measure
 from skimage import morphology
-from main import*
+
 
 # IMPORTANT PARAMETERS*****************************************************
 RED_LOW = [100,200,160]
 RED_UP = [210,255,255]
 GREEN_LOW = [100,100,100]
 GREEN_UP = [100,100,100]
-DILATION_RADIUS = 13
+DILATION_RADIUS = 5
 OPEN_RADIUS = 2
+DEBUG_MODE = True
 #**************************************************************************
 
 
@@ -70,9 +71,11 @@ def getTrafficLights(mask, im):
     Y_PAD_RATIO = 16
 
     #find connectivity components
-    _, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, useless = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #_, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     dim = mask.shape[:2]
     tls = [] #traffic lights
+    lights = [] # lights locations
     for cnt in contours:
         #cnt = contours[-1]
         x, y, w, h = cv2.boundingRect(cnt)
@@ -85,12 +88,14 @@ def getTrafficLights(mask, im):
             continue
 
 
-        x, y, w, h = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2])
-        tl_im = im[y: y + h, x: x + w]
-        tls.append((tl_im, y, x))
+        xPadded, yPadded, wPadded, hPadded = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2])
+        light = im[y: y + h, x: x + w]
+        tl_imPadded = im[yPadded: yPadded + hPadded, xPadded: xPadded + wPadded]
+        tls.append((tl_imPadded, yPadded, xPadded))
+        lights.append((light, y, x))
         print((y,x,h,w))
 
-    return tls
+    return tls, lights
 
 
 
@@ -131,7 +136,7 @@ def maskFilter(image):
     mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
     #kernel = np.ones((8,8),np.uint8)
-    res2 = cv2.bitwise_and(res, res, mask=mask1)
+    res2 = cv2.bitwise_and(res, res, mask=mask)
     #labels = morphology.label(res2, background=0)
     """
     try:
@@ -154,28 +159,29 @@ def maskFilter(image):
         matplotlib.pyplot.show()
     except:
         pass
-    """
+
     try:
         if DEBUG_MODE:
             matplotlib.pyplot.imshow(mask)
             matplotlib.pyplot.show()
     except:
         pass
-
-    x = measure.regionprops(res)
+    """
+    # x = measure.regionprops(res)
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)
 
 
 #test code - if add this breaks main
 if __name__ == '__main__':
-    im = cv2.imread('mask test images 1/frame720.jpg')
-    tls = maskFilter(im)
+    im = cv2.imread('/home/aviv/PycharmProjects/Projecton/framing/_number:65_posIndex:1-u_11_d_9_l_6_r_8.jpg')
+    tls, lights = maskFilter(im)
     print(len(tls))
     for i in range(len(tls)):
-        temp_im, y, x = tls[i]
+        (temp_im, y, x) = tls[i]
 
         dy, dx, _ = temp_im.shape
+
         print((y, x, dy, dx))
         cv2.rectangle(im, (x, y), (x + dx, y + dy), (0, 255, 0), 2)
         cv2.imshow("grrrr", temp_im)
