@@ -10,13 +10,15 @@ from skimage import morphology
 
 
 # IMPORTANT PARAMETERS*****************************************************
-RED_LOW = [100,200,160]
+RED_LOW = [100,100,160]
 RED_UP = [210,255,255]
 GREEN_LOW = [100,100,100]
 GREEN_UP = [100,100,100]
-DILATION_RADIUS = 5
+DILATION_RADIUS_BLACK = 13
+DILATION_RADIUS_COLOR = 5
 OPEN_RADIUS = 2
 DEBUG_MODE = True
+BLACK_AVG_FACTOR = 1
 #**************************************************************************
 
 
@@ -106,11 +108,11 @@ def maskFilter(image):
 
     # define range of black color in HSV
     lower_black = np.array(0)
-    upper_black = np.array(100)
-
+    upper_black_thresh = int(np.average(gray))
+    upper_black = np.array(upper_black_thresh)
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(gray, lower_black, upper_black)
-    kernelDILATION = np.ones((DILATION_RADIUS,DILATION_RADIUS),np.uint8)
+    kernelDILATION = np.ones((DILATION_RADIUS_BLACK,DILATION_RADIUS_BLACK),np.uint8)
     kernelOPEN = np.ones((OPEN_RADIUS,OPEN_RADIUS),np.uint8)
     mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
@@ -132,13 +134,14 @@ def maskFilter(image):
     mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
     mask2 = cv2.inRange(hsv, lower_green, upper_green)
     mask = cv2.bitwise_or(mask1, mask2)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOPEN)
+    # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOPEN)
+    kernelDILATION = np.ones((DILATION_RADIUS_COLOR,DILATION_RADIUS_COLOR),np.uint8)
     mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
     #kernel = np.ones((8,8),np.uint8)
     res2 = cv2.bitwise_and(res, res, mask=mask)
     #labels = morphology.label(res2, background=0)
-    """
+
     try:
         matplotlib.pyplot.imshow(image)
         matplotlib.pyplot.show()
@@ -166,7 +169,7 @@ def maskFilter(image):
             matplotlib.pyplot.show()
     except:
         pass
-    """
+
     # x = measure.regionprops(res)
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)

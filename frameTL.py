@@ -10,6 +10,8 @@ IMAGE = 0
 Y = 1
 X = 2
 
+Factor = 0.86
+
 DEBUG_MODE = True
 
 def light_color(light):
@@ -51,7 +53,7 @@ def frame_traffic_lights(tl_lst, lights):
             matplotlib.pyplot.imshow(mask)
             matplotlib.pyplot.show()
 
-            kernelOPEN = np.ones((cut_im.shape[0]//4, width//4), np.uint8)
+            kernelOPEN = np.ones((cut_im.shape[0]//10, width//10), np.uint8)
 
             mask = cv2.erode(mask, kernelOPEN, iterations=1)
             mask = cv2.dilate(mask, kernelOPEN, iterations=1)
@@ -60,17 +62,53 @@ def frame_traffic_lights(tl_lst, lights):
 
             #tl_down = FIND MIN Y
             tl_down = tl_up + 3*(height//4)
-            rows = np.sum(mask, axis=0)
+            rows = np.sum(mask, axis=1)
             for i in range(cut_im.shape[0]):
-                if rows[-i] >= width//2*255:
-                    tl_down = tl_up+cut_im.shape[0]-i
+                if rows[-i-1] >= width//4*255:
+                    tl_down = tl_up + height + cut_im.shape[0]-(i + 1)
                     break
             tl = im[tl_up:tl_down, tl_left:tl_right]
             matplotlib.pyplot.imshow(tl)
             matplotlib.pyplot.show()
 
+        if color == GREEN:
+            tl_down = lightY
+            cut_im = cut_im[:tl_down, :]
+            matplotlib.pyplot.imshow(cut_im)
+            matplotlib.pyplot.show()
+            gray = cv2.cvtColor(cut_im, cv2.COLOR_BGR2GRAY)
+            matplotlib.pyplot.imshow(gray)
+            matplotlib.pyplot.show()
+            gray = np.array(gray)
+            # thresh1 = np.sqrt(np.sum(np.square(gray)))
+            thresh = np.average(gray)
 
-im = cv2.imread('/home/aviv/PycharmProjects/Projecton/framing/_number:65_posIndex:1-u_11_d_9_l_6_r_8.jpg')
-tls, lights = mask.maskFilter(im)
+            # mask1 = cv2.inRange(gray, 0, thresh1)
+            mask = cv2.inRange(gray, 0, thresh)
+            matplotlib.pyplot.imshow(mask)
+            matplotlib.pyplot.show()
 
-frame_traffic_lights(tls, lights)
+            kernelOPEN = np.ones((cut_im.shape[0] // 10, width // 10), np.uint8)
+
+            mask = cv2.erode(mask, kernelOPEN, iterations=1)
+            mask = cv2.dilate(mask, kernelOPEN, iterations=1)
+            matplotlib.pyplot.imshow(mask)
+            matplotlib.pyplot.show()
+
+            # tl_down = FIND MIN Y
+            tl_up = tl_up + (height // 4)
+            rows = np.sum(mask, axis=0)
+            for i in range(cut_im.shape[0]):
+                if rows[i] >= 3* width // 4 * 255:
+                    tl_down = tl_down + i
+                    break
+            tl = im[tl_up:tl_down, tl_left:tl_right]
+            matplotlib.pyplot.imshow(tl)
+            matplotlib.pyplot.show()
+for i in range(2,7):
+    im = cv2.imread('/home/aviv/PycharmProjects/Projecton/framing/'+str(i)+'.jpg')
+    matplotlib.pyplot.imshow(im)
+    matplotlib.pyplot.show()
+
+    tls, lights = mask.maskFilter(im)
+    frame_traffic_lights(tls, lights)
