@@ -12,13 +12,16 @@ from skimage import morphology
 # IMPORTANT PARAMETERS*****************************************************
 RED_LOW = [100,100,160]
 RED_UP = [210,255,255]
-GREEN_LOW = [100,100,100]
-GREEN_UP = [100,100,100]
-DILATION_RADIUS_BLACK = 13
-DILATION_RADIUS_COLOR = 5
+GREEN_LOW = [150,150,80]
+GREEN_UP = [255,255,170]
+DILATION_RADIUS_BLACK = 25
+DILATION_RADIUS_COLOR_RED = 9
+DILATION_RADIUS_COLOR_GREEN = 15
 OPEN_RADIUS = 2
 DEBUG_MODE = True
-BLACK_AVG_FACTOR = 1
+BLACK_AVG_FACTOR_FULL = 0.5
+BLACK_AVG_FACTOR_CUT = 1
+GREEN_TO_RED_FACTOR = 40
 #**************************************************************************
 
 
@@ -66,11 +69,11 @@ def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
 
 #returns the traffic lights in image
 def getTrafficLights(mask, im):
-    MIN_CNT_SIZE = 4 #minimum connectivity component size
+    MIN_CNT_SIZE = 8 #minimum connectivity component size
     MAX_CNT_SIZE = 40 #maximum     "           "        "
     MAX_DIM_RATIO = 1.5 #max ratio between width and height
     X_PAD_RATIO = 6
-    Y_PAD_RATIO = 16
+    Y_PAD_RATIO = 10
 
     #find connectivity components
     contours, useless = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -101,19 +104,19 @@ def getTrafficLights(mask, im):
 
 
 
-def maskFilter(image):
+def maskFilter(image, full_or_cropped = BLACK_AVG_FACTOR_FULL):
 
     org_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # define range of black color in HSV
     lower_black = np.array(0)
-    upper_black_thresh = int(np.average(gray))
+    upper_black_thresh = int(full_or_cropped*np.average(gray))
     upper_black = np.array(upper_black_thresh)
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(gray, lower_black, upper_black)
     kernelDILATION = np.ones((DILATION_RADIUS_BLACK,DILATION_RADIUS_BLACK),np.uint8)
-    kernelOPEN = np.ones((OPEN_RADIUS,OPEN_RADIUS),np.uint8)
+
     mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
 
     # Bitwise-OR mask and original image
@@ -131,24 +134,34 @@ def maskFilter(image):
     lower_green = np.array(GREEN_LOW)
     upper_green = np.array(GREEN_UP)
 
-    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    mask2 = cv2.inRange(hsv, lower_green, upper_green)
-    mask = cv2.bitwise_or(mask1, mask2)
-    # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernelOPEN)
-    kernelDILATION = np.ones((DILATION_RADIUS_COLOR,DILATION_RADIUS_COLOR),np.uint8)
-    mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
+    maskR = cv2.inRange(hsv, lower_red1, upper_red1)
 
+    mask2 = cv2.inRange(image, lower_green, upper_green)
+    mask3 = (image[:,:,1] > image[:,:,2]+GREEN_TO_RED_FACTOR).astype(np.uint8)
+    maskG = cv2.bitwise_and(mask2, mask3)
+
+    matplotlib.pyplot.imshow(maskR)
+    matplotlib.pyplot.show()
+
+    kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
+    maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
+
+    kernelDILATION_RED = np.ones((DILATION_RADIUS_COLOR_RED, DILATION_RADIUS_COLOR_RED), np.uint8)
+    maskR = cv2.dilate(maskR, kernelDILATION_RED, iterations=1)
+
+    kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
+    maskR = cv2.erode(maskR, kernelOPEN, iterations=1)
+
+    kernelDILATION_GREEN = np.ones((DILATION_RADIUS_COLOR_GREEN, DILATION_RADIUS_COLOR_GREEN), np.uint8)
+    maskG = cv2.dilate(maskG,kernelDILATION_GREEN,iterations = 1)
+    mask = cv2.bitwise_xor(maskR, maskG)
     #kernel = np.ones((8,8),np.uint8)
     res2 = cv2.bitwise_and(res, res, mask=mask)
     #labels = morphology.label(res2, background=0)
 
+
     try:
         matplotlib.pyplot.imshow(image)
-        matplotlib.pyplot.show()
-    except:
-        pass
-    try:
-        matplotlib.pyplot.imshow(org_hsv)
         matplotlib.pyplot.show()
     except:
         pass
@@ -158,15 +171,13 @@ def maskFilter(image):
     except:
         pass
     try:
-        matplotlib.pyplot.imshow(res2)
+        matplotlib.pyplot.imshow(maskR)
         matplotlib.pyplot.show()
     except:
         pass
-
     try:
-        if DEBUG_MODE:
-            matplotlib.pyplot.imshow(mask)
-            matplotlib.pyplot.show()
+        matplotlib.pyplot.imshow(res2)
+        matplotlib.pyplot.show()
     except:
         pass
 
