@@ -7,8 +7,10 @@ from PIL import Image
 import matplotlib.pyplot
 import numpy as np
 from scipy.misc import imresize
-from main import *
 
+
+DEBUG_MODE = False;
+CNN_NAME = 'arrows'
 
 FACTOR = 1.2
 SMALLEST_TL = [8,4]
@@ -61,8 +63,9 @@ minicnn = getMiniCnn()
 
 '''
 def getCnn():
-    model = load_model("model")
+    model = load_model("cnn weights/" + CNN_NAME)
     return model
+
 minicnn = getCnn()
 
 
