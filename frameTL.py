@@ -118,8 +118,8 @@ def frame_traffic_lights(tl_lst, lights):
             # 4. run downwards until most of the line is black (this is our line!)
             tl_down = lightY - minY + light_height
             cut_im = cut_im[:tl_down-light_height, :]
-            matplotlib.pyplot.imshow(cut_im)
-            matplotlib.pyplot.show()
+            # matplotlib.pyplot.imshow(cut_im)
+            # matplotlib.pyplot.show()
             gray = cv2.cvtColor(cut_im, cv2.COLOR_BGR2GRAY)
             #matplotlib.pyplot.imshow(gray)
             #matplotlib.pyplot.show()
@@ -148,6 +148,7 @@ def frame_traffic_lights(tl_lst, lights):
                     break
             tl = im[tl_up:tl_down, tl_left:tl_right]
             #print (toc())
+
             matplotlib.pyplot.imshow(tl)
             matplotlib.pyplot.show()
 
@@ -164,7 +165,7 @@ tls, lights = mask.maskFilter(im)
 frame_traffic_lights(tls, lights)
 """
 
-for i in range(14,16):
+for i in range(15,24):
 
     im = cv2.imread('/home/aviv/PycharmProjects/Projecton/framing/'+str(i)+'.jpg')
     #im = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)

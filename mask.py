@@ -20,14 +20,14 @@ GREEN_LOW2 = [85,0,210]
 GREEN_UP = [105,170,255]
 DILATION_RADIUS_BLACK = 15
 DILATION_RADIUS_LAP = 2
-DILATION_RADIUS_COLOR_RED = 3
+DILATION_RADIUS_COLOR_RED = 7
 DILATION_RADIUS_COLOR_GREEN = 11
 OPEN_RADIUS = 4
 DEBUG_MODE = True
 BLACK_AVG_FACTOR_FULL = 0.3
 BLACK_AVG_FACTOR_CUT = 1
 GREEN_TO_RED_FACTOR = 40
-UPPER_BLACK_THRESH = 100
+UPPER_BLACK_THRESH = 170
 UPPER_LAP = 255
 LOWER_LAP = 70
 RED = 2
@@ -131,12 +131,12 @@ def maskFilter(image, cropped = False):
         image = image[:-image.shape[0]//5,image.shape[1]//8:-image.shape[1]//8,:]
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     lap = np.abs(cv2.Laplacian(gray, cv2.CV_64F))
-
+    """
     matplotlib.pyplot.imshow(lap)
     matplotlib.pyplot.show()
     matplotlib.pyplot.imshow(gray)
     matplotlib.pyplot.show()
-
+    """
     # define range of black color in HSV
     lower_black = np.array(0)
     if cropped:
@@ -158,10 +158,10 @@ def maskFilter(image, cropped = False):
         mask = cv2.bitwise_and(maskB1, maskB2)
 
         kernelDILATION = np.ones((DILATION_RADIUS_BLACK,DILATION_RADIUS_BLACK),np.uint8)
-        print ("?")
+
         mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
-        matplotlib.pyplot.imshow(mask)
-        matplotlib.pyplot.show()
+        #matplotlib.pyplot.imshow(mask)
+        #matplotlib.pyplot.show()
         # Bitwise-OR mask and original image
         res = cv2.bitwise_and(image, image, mask=mask)
         # Convert BGR to HSV
@@ -182,7 +182,11 @@ def maskFilter(image, cropped = False):
 
     maskG1 = cv2.inRange(hsv, lower_green1, upper_green)
     maskG2 = cv2.inRange(hsv, lower_green2, upper_green)
+
+    maskG3 = np.array(image[:,:,GREEN] > image[:,:,RED] + GREEN_TO_RED_FACTOR).astype(np.uint8)
+
     maskG = cv2.bitwise_or(maskG1, maskG2)
+    maskG = cv2.bitwise_and(maskG, maskG3)
 
     #kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
     #maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
@@ -203,7 +207,7 @@ def maskFilter(image, cropped = False):
     res2 = cv2.bitwise_and(res, res, mask=mask)
     #labels = morphology.label(res2, background=0)
 
-
+    """
     try:
         matplotlib.pyplot.imshow(image)
         matplotlib.pyplot.show()
@@ -234,7 +238,7 @@ def maskFilter(image, cropped = False):
         matplotlib.pyplot.show()
     except:
         pass
-
+    """
     # x = measure.regionprops(res)
     bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
     return getTrafficLights(bw_connectivity, image)
