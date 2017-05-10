@@ -10,18 +10,28 @@ from skimage import morphology
 
 
 # IMPORTANT PARAMETERS*****************************************************
-RED_LOW = [100,100,160]
-RED_UP = [210,255,255]
-GREEN_LOW = [150,150,80]
-GREEN_UP = [255,255,170]
-DILATION_RADIUS_BLACK = 25
-DILATION_RADIUS_COLOR_RED = 9
-DILATION_RADIUS_COLOR_GREEN = 15
-OPEN_RADIUS = 2
+RED_LOW1 = [169,120,160]
+RED_UP1 = [180,255,255]
+RED_LOW2 = [0,0,240]
+RED_UP2 = [25,150,255]
+
+GREEN_LOW1 = [90,0,150]
+GREEN_LOW2 = [85,0,210]
+GREEN_UP = [105,170,255]
+DILATION_RADIUS_BLACK = 15
+DILATION_RADIUS_LAP = 2
+DILATION_RADIUS_COLOR_RED = 3
+DILATION_RADIUS_COLOR_GREEN = 11
+OPEN_RADIUS = 4
 DEBUG_MODE = True
-BLACK_AVG_FACTOR_FULL = 0.5
+BLACK_AVG_FACTOR_FULL = 0.3
 BLACK_AVG_FACTOR_CUT = 1
 GREEN_TO_RED_FACTOR = 40
+UPPER_BLACK_THRESH = 100
+UPPER_LAP = 255
+LOWER_LAP = 70
+RED = 2
+GREEN = 1
 #**************************************************************************
 
 
@@ -48,7 +58,7 @@ def getCroppedImages(mask, orig):
 #get padding for TL image
 #returns (x, y, w, h) times the ratios given
 #im_dim image dimensions
-def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
+def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim, color = RED):
     #add padding
     mid_x = x + w / 2
     mid_y = y + h / 2
@@ -57,11 +67,18 @@ def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
     temp_x = mid_x - temp_w / 2
     temp_y = mid_y - temp_h / 2
 
-    #fit to image
-    new_x = int(max(0, temp_x))
-    new_y = int(max(0, temp_y))
-    new_w = int(min(im_dim[1], temp_w + temp_x) - new_x)
-    new_h = int(min(im_dim[0], temp_h + temp_y) - new_y)
+    # fit to image
+    if color == RED:
+        new_x = int(max(0, temp_x))
+        new_y = int(max(0, temp_y))
+        new_w = int(min(im_dim[1], temp_w + temp_x) - new_x)
+        new_h = int(min(im_dim[0], temp_h + temp_y) - new_y)
+
+    if color == GREEN:
+        new_x = int(max(0, temp_x))
+        new_y = int(max(0, temp_y - temp_h//4))
+        new_w = int(min(im_dim[1], temp_w + temp_x) - new_x)
+        new_h = int(min(im_dim[0], temp_h + temp_y) - new_y )
 
     return new_x, new_y, new_w, new_h
 
@@ -71,9 +88,9 @@ def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim):
 def getTrafficLights(mask, im):
     MIN_CNT_SIZE = 8 #minimum connectivity component size
     MAX_CNT_SIZE = 40 #maximum     "           "        "
-    MAX_DIM_RATIO = 1.5 #max ratio between width and height
-    X_PAD_RATIO = 6
-    Y_PAD_RATIO = 10
+    MAX_DIM_RATIO = 2 #max ratio between width and height
+    X_PAD_RATIO = 3
+    Y_PAD_RATIO = 9
 
     #find connectivity components
     contours, useless = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -81,6 +98,7 @@ def getTrafficLights(mask, im):
     dim = mask.shape[:2]
     tls = [] #traffic lights
     lights = [] # lights locations
+    color = GREEN
     for cnt in contours:
         #cnt = contours[-1]
         x, y, w, h = cv2.boundingRect(cnt)
@@ -92,69 +110,95 @@ def getTrafficLights(mask, im):
         if ((w / h > MAX_DIM_RATIO) or (h / w > MAX_DIM_RATIO)):
             continue
 
-
-        xPadded, yPadded, wPadded, hPadded = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2])
+        if im[y,x,RED] > im[y,x,GREEN]:
+            color = RED
+        else:
+            color = GREEN
+        xPadded, yPadded, wPadded, hPadded = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2], color)
         light = im[y: y + h, x: x + w]
         tl_imPadded = im[yPadded: yPadded + hPadded, xPadded: xPadded + wPadded]
         tls.append((tl_imPadded, yPadded, xPadded))
         lights.append((light, y, x))
-        print((y,x,h,w))
 
+    print(len(tls))
     return tls, lights
 
 
 
-def maskFilter(image, full_or_cropped = BLACK_AVG_FACTOR_FULL):
+def maskFilter(image, cropped = False):
 
-    org_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    if not cropped:
+        image = image[:-image.shape[0]//5,image.shape[1]//8:-image.shape[1]//8,:]
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    lap = np.abs(cv2.Laplacian(gray, cv2.CV_64F))
+
+    matplotlib.pyplot.imshow(lap)
+    matplotlib.pyplot.show()
+    matplotlib.pyplot.imshow(gray)
+    matplotlib.pyplot.show()
 
     # define range of black color in HSV
     lower_black = np.array(0)
-    upper_black_thresh = int(full_or_cropped*np.average(gray))
-    upper_black = np.array(upper_black_thresh)
-    # Threshold the HSV image to get only blue colors
-    mask = cv2.inRange(gray, lower_black, upper_black)
-    kernelDILATION = np.ones((DILATION_RADIUS_BLACK,DILATION_RADIUS_BLACK),np.uint8)
+    if cropped:
+        # Bitwise-OR mask and original image
+        res = image
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(res, cv2.COLOR_BGR2HSV)
+        # blurred = cv2.GaussianBlur(hsv, (5, 5), 0)
+    else:
+        upper_black_thresh = UPPER_BLACK_THRESH
+        upper_black = np.array(upper_black_thresh)
+        # Threshold the HSV image to get only blue colors
+        maskB1 = cv2.inRange(gray, lower_black, upper_black)
 
-    mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
+        maskB2 = cv2.inRange(lap, LOWER_LAP, UPPER_LAP)
+        kernelDILATION_LAP = np.ones((DILATION_RADIUS_BLACK, DILATION_RADIUS_BLACK), np.uint8)
+        maskB2 = cv2.dilate(maskB2,kernelDILATION_LAP,iterations = 1)
 
-    # Bitwise-OR mask and original image
-    res = cv2.bitwise_and(image, image, mask=mask)
-    # Convert BGR to HSV
-    hsv = cv2.cvtColor(res, cv2.COLOR_RGB2HSV)
-    #blurred = cv2.GaussianBlur(hsv, (5, 5), 0)
+        mask = cv2.bitwise_and(maskB1, maskB2)
 
-    #matplotlib.pyplot.imshow(org_hsv)
-    #matplotlib.pyplot.show()
-
+        kernelDILATION = np.ones((DILATION_RADIUS_BLACK,DILATION_RADIUS_BLACK),np.uint8)
+        print ("?")
+        mask = cv2.dilate(mask,kernelDILATION,iterations = 1)
+        matplotlib.pyplot.imshow(mask)
+        matplotlib.pyplot.show()
+        # Bitwise-OR mask and original image
+        res = cv2.bitwise_and(image, image, mask=mask)
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(res, cv2.COLOR_BGR2HSV)
+        #blurred = cv2.GaussianBlur(hsv, (5, 5), 0)
     #print hsv[966][304]
-    lower_red1 = np.array(RED_LOW)
-    upper_red1 = np.array(RED_UP)
-    lower_green = np.array(GREEN_LOW)
+    lower_red1 = np.array(RED_LOW1)
+    upper_red1 = np.array(RED_UP1)
+    lower_red2 = np.array(RED_LOW2)
+    upper_red2 = np.array(RED_UP2)
+    lower_green1 = np.array(GREEN_LOW1)
+    lower_green2 = np.array(GREEN_LOW2)
     upper_green = np.array(GREEN_UP)
 
-    maskR = cv2.inRange(hsv, lower_red1, upper_red1)
+    maskR1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    maskR2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    maskR = cv2.bitwise_or(maskR1, maskR2)
 
-    mask2 = cv2.inRange(image, lower_green, upper_green)
-    mask3 = (image[:,:,1] > image[:,:,2]+GREEN_TO_RED_FACTOR).astype(np.uint8)
-    maskG = cv2.bitwise_and(mask2, mask3)
+    maskG1 = cv2.inRange(hsv, lower_green1, upper_green)
+    maskG2 = cv2.inRange(hsv, lower_green2, upper_green)
+    maskG = cv2.bitwise_or(maskG1, maskG2)
 
-    matplotlib.pyplot.imshow(maskR)
-    matplotlib.pyplot.show()
-
-    kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
-    maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
+    #kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
+    #maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
 
     kernelDILATION_RED = np.ones((DILATION_RADIUS_COLOR_RED, DILATION_RADIUS_COLOR_RED), np.uint8)
     maskR = cv2.dilate(maskR, kernelDILATION_RED, iterations=1)
 
     kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
-    maskR = cv2.erode(maskR, kernelOPEN, iterations=1)
+    #maskR = cv2.erode(maskR, kernelOPEN, iterations=1)
 
     kernelDILATION_GREEN = np.ones((DILATION_RADIUS_COLOR_GREEN, DILATION_RADIUS_COLOR_GREEN), np.uint8)
+    kernelDILATION_SMALL = np.ones((2, 2), np.uint8)
+    maskG = cv2.dilate(maskG, kernelDILATION_SMALL, iterations=1)
+    maskG = cv2.erode(maskG, kernelOPEN, iterations=1)
     maskG = cv2.dilate(maskG,kernelDILATION_GREEN,iterations = 1)
-    mask = cv2.bitwise_xor(maskR, maskG)
+    mask = cv2.bitwise_or(maskR, maskG)
     #kernel = np.ones((8,8),np.uint8)
     res2 = cv2.bitwise_and(res, res, mask=mask)
     #labels = morphology.label(res2, background=0)
@@ -171,7 +215,17 @@ def maskFilter(image, full_or_cropped = BLACK_AVG_FACTOR_FULL):
     except:
         pass
     try:
+        matplotlib.pyplot.imshow(hsv)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
         matplotlib.pyplot.imshow(maskR)
+        matplotlib.pyplot.show()
+    except:
+        pass
+    try:
+        matplotlib.pyplot.imshow(maskG)
         matplotlib.pyplot.show()
     except:
         pass
