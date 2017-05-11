@@ -48,8 +48,9 @@ plt.show()
 
 path = '/media/aviv/DC5C192D5C190444/ourCam25_3_24'
 ster = streamer.Streamer(path, 10)
-for i in range(1280):
+for i in range(2200):
     im = ster.getNext()
+im = ster.getNext()
 matplotlib.pyplot.imshow(im)
 matplotlib.pyplot.show()
 #location of the traffic light in the first frame

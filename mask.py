@@ -10,10 +10,10 @@ from skimage import morphology
 
 
 # IMPORTANT PARAMETERS*****************************************************
-RED_LOW1 = [169,120,160]
-RED_UP1 = [180,255,255]
+RED_LOW1 = [169,0,160]
+RED_UP1 = [176,255,255]
 RED_LOW2 = [0,0,240]
-RED_UP2 = [25,150,255]
+RED_UP2 = [25,70,255]
 
 GREEN_LOW1 = [90,0,150]
 GREEN_LOW2 = [85,0,210]
@@ -26,12 +26,15 @@ OPEN_RADIUS = 4
 DEBUG_MODE = True
 BLACK_AVG_FACTOR_FULL = 0.3
 BLACK_AVG_FACTOR_CUT = 1
-GREEN_TO_RED_FACTOR = 40
+RED_TO_BLUE_FACTOR = 55
+GREEN_TO_RED_FACTOR = 38
+RED_TO_GREEN_FACTOR = 170
 UPPER_BLACK_THRESH = 170
 UPPER_LAP = 255
 LOWER_LAP = 70
 RED = 2
 GREEN = 1
+BLUE = 0
 #**************************************************************************
 
 
@@ -48,8 +51,15 @@ def toc():
     else:
         print ("Toc: start time not set")
 
+def light_color(light):
 
+    sumR = np.sum(light[:, :, RED])
+    sumG = np.sum(light[:, :, GREEN])
 
+    if sumG > sumR:
+        return GREEN
+    else:
+        return RED
 # ********************* TO IMPLEMENT ****************************
 def getCroppedImages(mask, orig):
     return [orig]
@@ -84,21 +94,21 @@ def getPadding(x, y, w, h, x_ratio, y_ratio, im_dim, color = RED):
 
 
 
-#returns the traffic lights in image
-def getTrafficLights(mask, im):
+# returns the traffic lights in image
+def getTrafficLights(mask, im, color):
     MIN_CNT_SIZE = 8 #minimum connectivity component size
     MAX_CNT_SIZE = 40 #maximum     "           "        "
     MAX_DIM_RATIO = 2 #max ratio between width and height
     X_PAD_RATIO = 3
-    Y_PAD_RATIO = 9
+    Y_PAD_RATIO = 8
 
     #find connectivity components
     contours, useless = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     #_, contours, heirs = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    dim = mask.shape[:2]
+
     tls = [] #traffic lights
     lights = [] # lights locations
-    color = GREEN
+
     for cnt in contours:
         #cnt = contours[-1]
         x, y, w, h = cv2.boundingRect(cnt)
@@ -110,15 +120,11 @@ def getTrafficLights(mask, im):
         if ((w / h > MAX_DIM_RATIO) or (h / w > MAX_DIM_RATIO)):
             continue
 
-        if im[y,x,RED] > im[y,x,GREEN]:
-            color = RED
-        else:
-            color = GREEN
         xPadded, yPadded, wPadded, hPadded = getPadding(x, y, w, h, X_PAD_RATIO, Y_PAD_RATIO, im.shape[:2], color)
         light = im[y: y + h, x: x + w]
         tl_imPadded = im[yPadded: yPadded + hPadded, xPadded: xPadded + wPadded]
         tls.append((tl_imPadded, yPadded, xPadded))
-        lights.append((light, y, x))
+        lights.append((light, y, x,color))
 
     print(len(tls))
     return tls, lights
@@ -177,8 +183,17 @@ def maskFilter(image, cropped = False):
     upper_green = np.array(GREEN_UP)
 
     maskR1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    maskR2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    kernelDILATION_RED = np.ones((DILATION_RADIUS_COLOR_RED, DILATION_RADIUS_COLOR_RED), np.uint8)
+
+    maskRtemp = cv2.dilate(maskR1, kernelDILATION_RED, iterations=1)
+    maskR2temp = cv2.inRange(hsv, lower_red2, upper_red2)
+    maskR2 = cv2.bitwise_and(maskRtemp, maskR2temp)
+
+    maskR3 =  np.array(image[:,:,BLUE] < image[:,:,RED] - RED_TO_BLUE_FACTOR).astype(np.uint8)
+
     maskR = cv2.bitwise_or(maskR1, maskR2)
+    maskR = cv2.bitwise_and(maskR, maskR3)
+
 
     maskG1 = cv2.inRange(hsv, lower_green1, upper_green)
     maskG2 = cv2.inRange(hsv, lower_green2, upper_green)
@@ -188,8 +203,8 @@ def maskFilter(image, cropped = False):
     maskG = cv2.bitwise_or(maskG1, maskG2)
     maskG = cv2.bitwise_and(maskG, maskG3)
 
-    #kernelOPEN = np.ones((OPEN_RADIUS, OPEN_RADIUS), np.uint8)
-    #maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
+    kernelOPEN = np.ones((1, 1), np.uint8)
+    maskR = cv2.erode(maskR, kernelOPEN, iterations = 1)
 
     kernelDILATION_RED = np.ones((DILATION_RADIUS_COLOR_RED, DILATION_RADIUS_COLOR_RED), np.uint8)
     maskR = cv2.dilate(maskR, kernelDILATION_RED, iterations=1)
@@ -199,12 +214,16 @@ def maskFilter(image, cropped = False):
 
     kernelDILATION_GREEN = np.ones((DILATION_RADIUS_COLOR_GREEN, DILATION_RADIUS_COLOR_GREEN), np.uint8)
     kernelDILATION_SMALL = np.ones((2, 2), np.uint8)
+
     maskG = cv2.dilate(maskG, kernelDILATION_SMALL, iterations=1)
+
     maskG = cv2.erode(maskG, kernelOPEN, iterations=1)
+
     maskG = cv2.dilate(maskG,kernelDILATION_GREEN,iterations = 1)
     mask = cv2.bitwise_or(maskR, maskG)
     #kernel = np.ones((8,8),np.uint8)
-    res2 = cv2.bitwise_and(res, res, mask=mask)
+    resG = cv2.bitwise_and(res, res, mask=maskG)
+    resR = cv2.bitwise_and(res, res, mask=maskR)
     #labels = morphology.label(res2, background=0)
 
     """
@@ -218,30 +237,45 @@ def maskFilter(image, cropped = False):
         matplotlib.pyplot.show()
     except:
         pass
+
     try:
         matplotlib.pyplot.imshow(hsv)
         matplotlib.pyplot.show()
     except:
         pass
+
+    try:
+        matplotlib.pyplot.imshow(maskG)
+        matplotlib.pyplot.show()
+    except:
+        pass
+
     try:
         matplotlib.pyplot.imshow(maskR)
         matplotlib.pyplot.show()
     except:
         pass
     try:
-        matplotlib.pyplot.imshow(maskG)
+        matplotlib.pyplot.imshow(resR)
         matplotlib.pyplot.show()
     except:
         pass
+
     try:
-        matplotlib.pyplot.imshow(res2)
+        matplotlib.pyplot.imshow(cv2.cvtColor(res2, cv2.COLOR_BGR2HSV))
         matplotlib.pyplot.show()
     except:
         pass
     """
     # x = measure.regionprops(res)
-    bw_connectivity = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
-    return getTrafficLights(bw_connectivity, image)
+    bw_connectivityG = cv2.cvtColor(resG, cv2.COLOR_BGR2GRAY)
+    bw_connectivityR = cv2.cvtColor(resR, cv2.COLOR_BGR2GRAY)
+    tlsG, lightsG = getTrafficLights(bw_connectivityG, image, GREEN)
+    tlsR, lightsR = getTrafficLights(bw_connectivityR, image, RED)
+    tls = tlsG + tlsR
+    lights = lightsG +lightsR
+
+    return tls, lights
 
 
 #test code - if add this breaks main

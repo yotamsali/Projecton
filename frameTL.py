@@ -9,9 +9,9 @@ GREEN = 1
 IMAGE = 0
 Y = 1
 X = 2
-
-Factor = 0.4
-
+LOCATION_GUESS = 3
+Factor = 0.65
+COLOR = 3
 
 DEBUG_MODE = True
 
@@ -39,7 +39,7 @@ def light_color(light):
         return RED
 
 # gets 2 lists of tuples: (traffic lights images cropped, Y location, X location),
-# (lights (of tl) images cropped, Y location, X location).
+# (lights (of tl) images cropped, Y location, X location, color).
 # returns a list of cropped tl (y,x,h,w, color).
 def frame_traffic_lights(tl_lst, lights):
     # the list that will be returned
@@ -55,7 +55,7 @@ def frame_traffic_lights(tl_lst, lights):
         light_height = light_im.shape[0]
         lightY = lights[index][Y]
         lightX = lights[index][X]
-        color = light_color(light_im)
+        color = lights[index][COLOR]
 
         # image information
         im = tl_lst[index][IMAGE]
@@ -79,8 +79,8 @@ def frame_traffic_lights(tl_lst, lights):
             # 4. run upwards until most of the line is black (this is our line!)
             tl_up = lightY - minY
             cut_im = cut_im[tl_up + light_height:, : ]
-            # matplotlib.pyplot.imshow(cut_im)
-            # matplotlib.pyplot.show()
+            #matplotlib.pyplot.imshow(cut_im)
+            #matplotlib.pyplot.show()
             gray = cv2.cvtColor(cut_im, cv2.COLOR_BGR2GRAY)
             #matplotlib.pyplot.imshow(gray)
             #matplotlib.pyplot.show()
@@ -90,7 +90,7 @@ def frame_traffic_lights(tl_lst, lights):
             #matplotlib.pyplot.imshow(mask)
             #matplotlib.pyplot.show()
 
-            kernelOPEN = np.ones((light_height + 1, width//10 + 1), np.uint8)
+            kernelOPEN = np.ones((light_height//3 + 1, width//3 + 1), np.uint8)
 
             mask = cv2.erode(mask, kernelOPEN, iterations=1)
             mask = cv2.dilate(mask, kernelOPEN, iterations=1)
@@ -98,7 +98,7 @@ def frame_traffic_lights(tl_lst, lights):
             #matplotlib.pyplot.imshow(mask)
             #matplotlib.pyplot.show()
 
-            tl_down = tl_up + 3*(light_height//4)
+            tl_down = tl_up + LOCATION_GUESS*(light_height//4)
             #rows = np.sqrt(np.sum(mask*mask, axis=1))
             rows = np.sum(mask, axis=1)
             for i in range(cut_im.shape[0]):
@@ -132,7 +132,7 @@ def frame_traffic_lights(tl_lst, lights):
             #matplotlib.pyplot.imshow(mask)
             #matplotlib.pyplot.show()
 
-            kernelOPEN = np.ones((light_height +1, width // 10 + 1), np.uint8)
+            kernelOPEN = np.ones((light_height//3 + 1, width//3 + 1), np.uint8)
 
             mask = cv2.erode(mask, kernelOPEN, iterations=1)
             mask = cv2.dilate(mask, kernelOPEN, iterations=1)
@@ -140,7 +140,8 @@ def frame_traffic_lights(tl_lst, lights):
             #matplotlib.pyplot.imshow(mask)
             #matplotlib.pyplot.show()
 
-            tl_up =  light_height // 3
+            tl_up =  light_height // LOCATION_GUESS
+
             rows = np.sum(mask, axis=1)
             for i in range(cut_im.shape[0]):
                 if rows[i] >= int(width*Factor)* 255:
@@ -165,14 +166,15 @@ tls, lights = mask.maskFilter(im)
 frame_traffic_lights(tls, lights)
 """
 
-for i in range(15,24):
+for i in range(16,24):
 
     im = cv2.imread('/home/aviv/PycharmProjects/Projecton/framing/'+str(i)+'.jpg')
-    #im = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+    #im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     matplotlib.pyplot.imshow(im)
     matplotlib.pyplot.show()
 
     tic()
     tls, lights = mask.maskFilter(im)
-    frame_traffic_lights(tls, lights)
     print (toc())
+    frame_traffic_lights(tls, lights)
+    #print (toc())
