@@ -124,7 +124,7 @@ def getTrafficLights(mask, im, color):
         light = im[y: y + h, x: x + w]
         tl_imPadded = im[yPadded: yPadded + hPadded, xPadded: xPadded + wPadded]
         tls.append((tl_imPadded, yPadded, xPadded))
-        lights.append((light, y, x,color))
+        lights.append((light, y, x, color))
 
     print(len(tls))
     return tls, lights
@@ -133,8 +133,6 @@ def getTrafficLights(mask, im, color):
 
 def maskFilter(image, cropped = False):
 
-    if not cropped:
-        image = image[:-image.shape[0]//5,image.shape[1]//8:-image.shape[1]//8,:]
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     lap = np.abs(cv2.Laplacian(gray, cv2.CV_64F))
     """
